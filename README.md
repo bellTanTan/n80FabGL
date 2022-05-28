@@ -46,12 +46,12 @@ Narya Ver 2.0 ボードでは GPIO ピン配置が異なるため FabGL 向け�
        +-- *.cmt
        +-- *.n80
 
-PC-8001.ROM は 24KiB(24576byte) の物です。
-8801-N80.ROM は 32KiB(32768byte) の物です。無くても支障ありません。
-PC-8031-2W.ROM は 2KiB(2048byte) の物です。無くても支障ありません。あると Disk Unit 構成ができます。
-PC-80S31.ROM は 2KiB(2048byte) の物です。無くても支障ありません。あると Disk Unit 構成ができます。
-(PC-80S31K は 8KiB(8192byte)のマスクROMだったような気がします。)
-DISK.ROM は 8KiB(8192byte) の物です。無くても支障ありません。あると Disk Unit 構成ができます。
+PC-8001.ROM は 24KiB(24576byte) の物です。<br>
+8801-N80.ROM は 32KiB(32768byte) の物です。無くても支障ありません。<br>
+PC-8031-2W.ROM は 2KiB(2048byte) の物です。無くても支障ありません。あると Disk Unit 構成ができます。<br>
+PC-80S31.ROM は 2KiB(2048byte) の物です。無くても支障ありません。あると Disk Unit 構成ができます。<br>
+(PC-80S31K は 8KiB(8192byte)のマスクROMだったような気がします。)<br>
+DISK.ROM は 8KiB(8192byte) の物です。無くても支障ありません。あると Disk Unit 構成ができます。<br>
 
 フォントファイルは [n80pi20210814.tar.gz](http://home1.catvmics.ne.jp/~kanemoto/dist/n80pi20210814.tar.gz)より入手できます。
 このファイルは 4096 byte で、簡易グラフックスの bit データを展開済みのデータになります。
