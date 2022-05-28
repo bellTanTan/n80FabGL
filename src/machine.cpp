@@ -972,9 +972,9 @@ void Machine::vkf11( void * context, int value )
   m->setRequestCpuCmd( cmdAnyBreak );
   // 専用機ｗ
   if ( value )
-    m->m_n80Load = m->n80Load( "Scramble.n80" );
+    //m->m_n80Load = m->n80Load( "Scramble.n80" );
   else
-    m->m_n80Load = m->n80Load( "Bug Fire.n80" );
+    //m->m_n80Load = m->n80Load( "Bug Fire.n80" );
   if ( m->m_n80Load )
     m->setRequestCpuCmd( cmdSetPCSP, m->m_requestPC, m->m_requestSP, 0 );
   m->setRequestCpuCmd( cmdContinue );
