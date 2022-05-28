@@ -63,7 +63,7 @@ N-BASIC な cmt ファイルとして color.cmt と mono.cmt をこのリポジ�
 
 # 5. 操作
 
-キーボードの配置はオリジナルの配置に近づけています。元を忘れた方はこちらで[キーボードレイアウト](https://www.pcmini.jp/manual/pc-8001-manual/keyboard-pc-8001/)を確認できます。
+キーボードの配置はオリジナルの配置に近づけています。元を忘れた方はこちらで[キーボードレイアウト](https://www.pcmini.jp/manual/pc-8001-manual/keyboard-pc-8001/)を確認できます。<br>
 (小生もHAL研PasocomMini PC-8001所有しています。d88ファイル直ロード出来なかったのがとても寂しかったですｗ)
 
 以下、特記します。
@@ -83,73 +83,71 @@ N-BASIC な cmt ファイルとして color.cmt と mono.cmt をこのリポジ�
 # 6. cmt と n80 について
 
 F9 で開くメニュー「Select Files」から利用します。
-
+<br>
 microSD の /PC8001/MEDIA に、このリポジトリ内 MEDIA フォルダの color.cmt と mono.cmt が配置されているとして以下進みます。
-
-F9 で開くメニュー「Select Files」より color.cmt を選択します。
-cload"color[RETURN] します。
-(くどい説明書きすると [RETURN] は入力文字列では無く 106/109 キーボードの Enter キーを押す事を示します)
-run[RETURN]します。
-WIDTH 40,20/ WIDTH 40,25/ WIDTH 80,20/ WIDTH 80,25 でのカラーモード COLOR 1 〜 COLOR 7 の表示が実行されます。
-
-F9 で開くメニュー「Select Files」より mono.cmt を選択します。
-cload"mono[RETURN] します。
-run[RETURN]します。
-WIDTH 40,20/ WIDTH 40,25/ WIDTH 80,20/ WIDTH 80,25 での白黒モード COLOR 0 〜 COLOR 7 の表示が実行されます。
-
-マシン語ファイルロードは以下の流れになります。
-mon[RETURN]
-*L[RETURN]
-*CTRL+B[RETURN]
-
-BASIC セーブは以下の形式です。使用できるファイル名は ROM プログラムの制約で6文字です。
-csave"test01" → microSD の /PC8001/MEDIA に test01.cmt として保存されます。
-
-マシン語ファイルセーブは以下の形式です。ROMプログラムの制約でファイル名が無いです。それでは保存になりませんので開始アドレスと終了アドレスを付与したファイル名としました。
-mon[RETURN]
-*W0000,001f[RETURN] → microSD の /PC8001/MEDIA に mon0000-001F.cmt として保存されます。
-*WE010,E05A[RETURN] → microSD の /PC8001/MEDIA に monE010-E05A.cmt として保存されます。
-
-n80 ファイルは規定どおり RAM 8000Hよりロードし PC ← FF3DH SP ← WORD(16bit)[FF3EHの値とFF3FHの値] です。
-
-
+<br>
+F9 で開くメニュー「Select Files」より color.cmt を選択します。<br>
+cload"color[RETURN] します。<br>
+(くどい説明書きすると [RETURN] は入力文字列では無く 106/109 キーボードの Enter キーを押す事を示します)<br>
+run[RETURN]します。<br>
+WIDTH 40,20/ WIDTH 40,25/ WIDTH 80,20/ WIDTH 80,25 でのカラーモード COLOR 1 〜 COLOR 7 の表示が実行されます。<br>
+<br>
+F9 で開くメニュー「Select Files」より mono.cmt を選択します。<br>
+cload"mono[RETURN] します。<br>
+run[RETURN]します。<br>
+WIDTH 40,20/ WIDTH 40,25/ WIDTH 80,20/ WIDTH 80,25 での白黒モード COLOR 0 〜 COLOR 7 の表示が実行されます。<br>
+<br>
+マシン語ファイルロードは以下の流れになります。<br>
+mon[RETURN]<br>
+*L[RETURN]<br>
+*CTRL+B[RETURN]<br>
+<br>
+BASIC セーブは以下の形式です。使用できるファイル名は ROM プログラムの制約で6文字です。<br>
+csave"test01" → microSD の /PC8001/MEDIA に test01.cmt として保存されます。<br>
+<br>
+マシン語ファイルセーブは以下の形式です。ROMプログラムの制約でファイル名が無いです。それでは保存になりませんので開始アドレスと終了アドレスを付与したファイル名としました。<br>
+mon[RETURN]<br>
+*W0000,001f[RETURN] → microSD の /PC8001/MEDIA に mon0000-001F.cmt として保存されます。<br>
+*WE010,E05A[RETURN] → microSD の /PC8001/MEDIA に monE010-E05A.cmt として保存されます。<br>
+<br>
+n80 ファイルは規定どおり RAM 8000Hよりロードし PC ← FF3DH SP ← WORD(16bit)[FF3EHの値とFF3FHの値] です。<br>
 
 # 7. Disk Unit について
 
-2KiB(2048byte)な ROM ファイルを利用できてる場合、フロッピーディスクは 4 基(fd0,fd1,fd2,fd3)としました。
-8KiB(8192byte)な ROM ファイルでも 4 基可能だと思ったのですが動作させてみると 2 基(fd0,fd1)しか出来ませんでした。
+2KiB(2048byte)な ROM ファイルを利用できてる場合、フロッピーディスクは 4 基(fd0,fd1,fd2,fd3)としました。<br>
+8KiB(8192byte)な ROM ファイルでも 4 基可能だと思ったのですが動作させてみると 2 基(fd0,fd1)しか出来ませんでした。<br>
 
-F9 で開くメニューに「Disk Rom Disable」と出ているときに確定(Enter or マウスクリック)するとリセットがかかり ROM BASIC が立ち上がります。
-F9 で開くメニューに「Disk Rom Enable」と出ているときに確定(Enter or マウスクリック)するとリセットがかかり Disk Unit から boot しようとします。
+F9 で開くメニューに「Disk Rom Disable」と出ているときに確定(Enter or マウスクリック)するとリセットがかかり ROM BASIC が立ち上がります。<br>
+F9 で開くメニューに「Disk Rom Enable」と出ているときに確定(Enter or マウスクリック)するとリセットがかかり Disk Unit から boot しようとします。<br>
 
-F9 で開くメニューの「Mount Disk」より fd0,fd1,(fd2,fd3) に挿入したい D88 ファイルを選択します。選択後 F12 でリセットです。場合によっては SHIFT+F12 でいけます。
-F9 で開くメニューの「Unmount Disk」より fd0,fd1,(fd2,fd3) に排出したい D88 ファイルを選択します。
+F9 で開くメニューの「Mount Disk」より fd0,fd1,(fd2,fd3) に挿入したい D88 ファイルを選択します。選択後 F12 でリセットです。場合によっては SHIFT+F12 でいけます。<br>
+F9 で開くメニューの「Unmount Disk」より fd0,fd1,(fd2,fd3) に排出したい D88 ファイルを選択します。<br>
 
-2D タイプ(2head 40track 16sector 256sectorByte = 320KiB(327680byte))の D88 ファイル(348848byte)が対象です。
-D88 ファイルは Read/Write されます。手持ちの D88 マスターファイルの消失には十分に注意して下さい。
-D88 ファイルの「書き込み禁止」ステータス(ファイル先頭より 0 基点で 26 バイト目 10H で書き込み禁止)に対応しています。
-2重ガードも可能にしています。n80FabGL.ino 99 行目 bool writeProtected = false; を bool writeProtected = true; にすることで可能です。
+2D タイプ(2head 40track 16sector 256sectorByte = 320KiB(327680byte))の D88 ファイル(348848byte)が対象です。<br>
+D88 ファイルは Read/Write されます。手持ちの D88 マスターファイルの消失には十分に注意して下さい。<br>
+D88 ファイルの「書き込み禁止」ステータス(ファイル先頭より 0 基点で 26 バイト目 10H で書き込み禁止)に対応しています。<br>
+2重ガードも可能にしています。n80FabGL.ino 99 行目 bool writeProtected = false; を bool writeProtected = true; にすることで可能です。<br>
 
-Disk Unit CPU(通称サブCPU)は core #1 で動作させています。core #1 には他に ISR/other task がいます。優先順位を上げすぎると CPU 時間を食いつぶして動作不能に陥ります。
-タスク調整/クリティカルセクションとしてのミューテックス調整の結果、優先順位 1 としました。Main CPU 側のタスクも優先順位 1 です。常時動作している事になるので
-ISR/other taskと資源取り合いが発生します。そのため Main CPU (core #0)から見た Disk Unit I/O アクセス(ポート FCH/FDH/FEH/FFH)最終より5秒後にサスペンドさせるようにしました。
-リジュームは Main CPU (core #0)から見た Disk Unit I/O アクセスがトリガーとなります。
+Disk Unit CPU(通称サブCPU)は core #1 で動作させています。core #1 には他に ISR/other task がいます。優先順位を上げすぎると CPU 時間を食いつぶして動作不能に陥ります。<br>
+タスク調整/クリティカルセクションとしてのミューテックス調整の結果、優先順位 1 としました。Main CPU 側のタスクも優先順位 1 です。常時動作している事になるので<br>
+ISR/other taskと資源取り合いが発生します。そのため Main CPU (core #0)から見た Disk Unit I/O アクセス(ポート FCH/FDH/FEH/FFH)最終より5秒後にサスペンドさせるようにしました。<br>
+リジュームは Main CPU (core #0)から見た Disk Unit I/O アクセスがトリガーとなります。<br>
 
-システム全体を安定動作に持っていかせるための弊害は Disk Unit CPU(通称サブCPU) で Disk Uint 以外の動作を行うプログラムを転送して動作待ちを行うプログラムの場合です。
-そのタイプのソフトは限られているのでご了承頂けると幸いです。どうしてもと言う場合は src/emu.h の #define DONT_DISKCPU_SUSPEND を有効(先頭2文字の // を消す)にして書き込んで下さい。
+システム全体を安定動作に持っていかせるための弊害は Disk Unit CPU(通称サブCPU) で Disk Uint 以外の動作を行うプログラムを転送して動作待ちを行うプログラムの場合です。<br>
+そのタイプのソフトは限られているのでご了承頂けると幸いです。どうしてもと言う場合は src/emu.h の #define DONT_DISKCPU_SUSPEND を有効(先頭2文字の // を消す)にして書き込んで下さい。<br>
 
-Disk Unit CPU(通称サブCPU)を常時走らせて core #1 の資源取り合いが発生してキーボード入力が抜けるとか重くて画面表示が追いつかないとかを発生させるよりもマシかと思います(笑)
+Disk Unit CPU(通称サブCPU)を常時走らせて core #1 の資源取り合いが発生してキーボード入力が抜けるとか重くて画面表示が追いつかないとかを発生させるよりもマシかと思います(笑)<br>
 
 # 8. 拡張した機能
 
-NEC PC-8001 としてのカレンダー時計として時計設定可能です。年保持無いと言う事には変わりません。内部的には 1970 年です。
-プリンター出力。LLIST で Arduino IDE のシリアルポートに出てきます。それだけ(笑)
-BASIC TERM A,0,0,0 で Arduino IDE のシリアルポートと入出力できます。通信条件は完全無視な実装です(笑)
-CMT セーブの状態表示を画面右上にします。
-カナロックの状態表示を画面右上にします。
-Disk Unit アクセス中を示す状態表示を画面右上にします。
-Disk Unit シーク音(プランジャ動作音)を鳴動します。
-システム全体動作安定の為 Disk Unit CPU(通称サブCPU)はタスクサスペンド/リジュームします。
+NEC PC-8001 としてのカレンダー時計として時計設定可能です。年保持無いと言う事には変わりません。内部的には 1970 年です。<br>
+プリンター出力。LLIST で Arduino IDE のシリアルポートに出てきます。それだけ(笑)<br>
+BASIC TERM A,0,0,0 で Arduino IDE のシリアルポートと入出力できます。通信条件は完全無視な実装です(笑)<br>
+CMT セーブの状態表示を画面右上にします。<br>
+カナロックの状態表示を画面右上にします。<br>
+Disk Unit アクセス中を示す状態表示を画面右上にします。<br>
+Disk Unit シーク音(プランジャ動作音)を鳴動します。<br>
+システム全体動作安定の為 Disk Unit CPU(通称サブCPU)はタスクサスペンド/リジュームします。<br>
 
 # 9. Narya Ver 2.0 ボード向けパッチ
 
