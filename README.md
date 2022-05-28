@@ -82,9 +82,9 @@ N-BASIC な cmt ファイルとして color.cmt と mono.cmt をこのリポジ�
 
 # 6. cmt と n80 について
 
-F9 で開くメニュー「Select Files」から利用します。
+F9 で開くメニュー「Select Files」から利用します。<br>
 <br>
-microSD の /PC8001/MEDIA に、このリポジトリ内 MEDIA フォルダの color.cmt と mono.cmt が配置されているとして以下進みます。
+microSD の /PC8001/MEDIA に、このリポジトリ内 MEDIA フォルダの color.cmt と mono.cmt が配置されているとして以下進みます。<br>
 <br>
 F9 で開くメニュー「Select Files」より color.cmt を選択します。<br>
 cload"color[RETURN] します。<br>
