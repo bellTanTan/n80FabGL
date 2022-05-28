@@ -175,37 +175,37 @@ Narya Ver 2.0 ボードの場合
 
 # 11. 問題点
 
-Arduino ESP32 v1.0.6 & FabGL v1.0.8 を利用した場合
-
-微妙に遅い。
-
-Arduino ESP32 v2.0.3 & FabGL v1.0.8 を利用した場合
-
-より微妙に遅い。
-boot 後、画面最上部にファンクションキーのゴミ表示が瞬時でる。
-disk format(uPD765A write id)が MainCpuTask 側でタイムアウト。
-  SD I/O 時間が Arduino ESP32 v2.0.2 より改善されてるが、やっぱり遅いのが原因
-  Arduino ESP32 v1.0.6 で 80 track r/w _DEBUG モードで約 28 秒で OK
-  Arduino ESP32 v2.0.3 で 50 track r/w _DEBUG モードで約 56 秒で NG
-  n-disk basic(20-Sep-1981) format.DS は Disk I/O Error 検出
-  s-dos 1.1 format は異常検知で自動 reboot
-  CP/M 2.2 format.com は OK (55 秒内 80 track 完了判定は実装無し?ｗ)
-
-以下、Arduino ESP32 v1.0.6 & Arduino ESP32 v2.0.3 のどちらでも
-
-WIDTH 80,20 表示崩れ
-  なして発生するのかわがんね。単体テストはOK。このモードは放置します。
-  Arduino ESP32 v2.0.3 だとだいぶましだけど瞬時崩れが随時見える。
-  やっぱ 200LINE をフォント高さ 10 でスキャンライン描画は想定外なのかも知れない。
-  WIDTH 40,20 はいけてるのに。かなしすｗ
-
-左ALTキー併用でテンキー(0〜9)GRAPH文字が入力出来ない
-  右ALTキー併用はOK。回避策あるのでいいかとｗ
-
-beep音、seek音が微妙
-  実機(PC-8001/PC-8033/PC-80S31)から生録したデータを
-  FabGL準拠のサンプリングレート16kHz/mono/8bitデータ化で
-  再生してるけど元がヘタれてる?(ｗ) やっぱコンデンサ全交換要かｗ
+Arduino ESP32 v1.0.6 & FabGL v1.0.8 を利用した場合<br>
+<br>
+微妙に遅い。<br>
+<br>
+Arduino ESP32 v2.0.3 & FabGL v1.0.8 を利用した場合<br>
+<br>
+より微妙に遅い。<br>
+boot 後、画面最上部にファンクションキーのゴミ表示が瞬時でる。<br>
+disk format(uPD765A write id)が MainCpuTask 側でタイムアウト。<br>
+  SD I/O 時間が Arduino ESP32 v2.0.2 より改善されてるが、やっぱり遅いのが原因<br>
+  Arduino ESP32 v1.0.6 で 80 track r/w _DEBUG モードで約 28 秒で OK<br>
+  Arduino ESP32 v2.0.3 で 50 track r/w _DEBUG モードで約 56 秒で NG<br>
+  n-disk basic(20-Sep-1981) format.DS は Disk I/O Error 検出<br>
+  s-dos 1.1 format は異常検知で自動 reboot<br>
+  CP/M 2.2 format.com は OK (55 秒内 80 track 完了判定は実装無し?ｗ)<br>
+<br>
+以下、Arduino ESP32 v1.0.6 & Arduino ESP32 v2.0.3 のどちらでも<br>
+<br>
+WIDTH 80,20 表示崩れ<br>
+  なして発生するのかわがんね。単体テストはOK。このモードは放置します。<br>
+  Arduino ESP32 v2.0.3 だとだいぶましだけど瞬時崩れが随時見える。<br>
+  やっぱ 200LINE をフォント高さ 10 でスキャンライン描画は想定外なのかも知れない。<br>
+  WIDTH 40,20 はいけてるのに。かなしすｗ<br>
+<br>
+左ALTキー併用でテンキー(0〜9)GRAPH文字が入力出来ない<br>
+  右ALTキー併用はOK。回避策あるのでいいかとｗ<br>
+<br>
+beep音、seek音が微妙<br>
+  実機(PC-8001/PC-8033/PC-80S31)から生録したデータを<br>
+  FabGL準拠のサンプリングレート16kHz/mono/8bitデータ化で<br>
+  再生してるけど元がヘタれてる?(ｗ) やっぱコンデンサ全交換要かｗ<br>
 
 # 12. 最後に
 
