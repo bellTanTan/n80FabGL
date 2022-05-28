@@ -20,7 +20,7 @@ DEKO 様公開の[回路](https://ht-deko.com/arduino/fabgl.html) で動作確�
 
 ![DEKO回路](/img/DEKO回路.jpg)
 
-Narya Ver 2.0 [Kishima Craft Works](https://kishima.github.io/jp/family_mruby/) で動作確認済みです。
+Narya Ver 2.0 ボード [Kishima Craft Works](https://kishima.github.io/jp/family_mruby/) で動作確認済みです。
 
 ![Narya2.0ボード](/img/Narya2.0ボード.jpg)
 
