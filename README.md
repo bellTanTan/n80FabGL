@@ -130,18 +130,19 @@ D88 ファイルの「書き込み禁止」ステータス(ファイル先頭よ
 2重ガードも可能にしています。n80FabGL.ino 99 行目 bool writeProtected = false; を bool writeProtected = true; にすることで可能です。<br>
 
 Disk Unit CPU(通称サブCPU)は core #1 で動作させています。core #1 には他に ISR/other task がいます。優先順位を上げすぎると CPU 時間を食いつぶして動作不能に陥ります。<br>
-タスク調整/クリティカルセクションとしてのミューテックス調整の結果、優先順位 1 としました。Main CPU 側のタスクも優先順位 1 です。常時動作している事になるので<br>
-ISR/other taskと資源取り合いが発生します。そのため Main CPU (core #0)から見た Disk Unit I/O アクセス(ポート FCH/FDH/FEH/FFH)最終より5秒後にサスペンドさせるようにしました。<br>
+タスク調整/クリティカルセクションとしてのミューテックス調整の結果、優先順位 1 としました。Main CPU 側のタスクも優先順位 1 です。<br>
+このままだと Disk Unit CPU(通称サブCPU) 常時動作している事になるので ISR/other taskと資源取り合い(主に CPU 時間)が発生します。<br>
+そのため Main CPU (core #0)から見た Disk Unit I/O アクセス(ポート FCH/FDH/FEH/FFH)最終より5秒後にサスペンドさせるようにしました。<br>
 リジュームは Main CPU (core #0)から見た Disk Unit I/O アクセスがトリガーとなります。<br>
 
 システム全体を安定動作に持っていかせるための弊害は Disk Unit CPU(通称サブCPU) で Disk Uint 以外の動作を行うプログラムを転送して動作待ちを行うプログラムの場合です。<br>
 そのタイプのソフトは限られているのでご了承頂けると幸いです。どうしてもと言う場合は src/emu.h の #define DONT_DISKCPU_SUSPEND を有効(先頭2文字の // を消す)にして書き込んで下さい。<br>
 
-Disk Unit CPU(通称サブCPU)を常時走らせて core #1 の資源取り合いが発生してキーボード入力が抜けるとか重くて画面表示が追いつかないとかを発生させるよりもマシかと思います(笑)<br>
+Disk Unit CPU(通称サブCPU)を常時走らせて core #1 の資源取り合い(主に CPU 時間)が発生してキーボード入力が抜けるとか重くて画面表示が追いつかないとかを発生させるよりもマシかと思います(笑)<br>
 
 # 8. 拡張した機能
 
-NEC PC-8001 としてのカレンダー時計として時計設定可能です。年保持無いと言う事には変わりません。内部的には 1970 年です。<br>
+NEC PC-8001 としてのカレンダー時計として時計設定可能です。年保持不可と言う事には変わりません。内部的には 1970 年です。<br>
 プリンター出力。LLIST で Arduino IDE のシリアルポートに出てきます。それだけ(笑)<br>
 BASIC TERM A,0,0,0 で Arduino IDE のシリアルポートと入出力できます。通信条件は完全無視な実装です(笑)<br>
 CMT セーブの状態表示を画面右上にします。<br>
@@ -155,7 +156,7 @@ Disk Unit シーク音(プランジャ動作音)を鳴動します。<br>
 以下の流れです。ホームディレクトリでパッチを行うと言う事です。Windows なので patch.exe が無い? 探して下さい(笑) もう Micro$oft な時代は終わってるから全部完全移植すればいいのに(草)
 
     $ cd
-    $ patch -p0 < Narya.patch
+    $ patch -p0 < patch1.0.8/Narya.patch
 
 # 10. FabGL v1.0.6 を使いたい
 
@@ -164,13 +165,13 @@ Disk Unit シーク音(プランジャ動作音)を鳴動します。<br>
 FabGL完全準拠のハードの場合
 
     $ cd
-    $ patch -p0 < Z80.patch
-    $ patch -p0 < kbdlayouts.patch
+    $ patch -p0 < patch1.0.6/Z80.patch
+    $ patch -p0 < patch1.0.6/kbdlayouts.patch
 
 Narya Ver 2.0 ボードの場合
 
     $ cd
-    $ patch -p0 < Narya.patch
+    $ patch -p0 < patch1.0.6/Narya.patch
 
 # 11. 問題点
 
