@@ -90,6 +90,10 @@ public:
     {
       if ( m_cmtMode )
         cmt_write( value );
+#ifndef _DEBUG
+      else
+        Serial.write( value );
+#endif // !_DEBUG
       return true;
     }
     if ( address == 0x21 )

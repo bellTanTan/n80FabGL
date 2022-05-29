@@ -816,6 +816,7 @@ void Machine::writeIO( void * context, int address, int value )
       break;
     case 0xE2:
       m->m_portE2writeData = value;
+      _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] extMemory Mode\r\n", __func__, __LINE__, address, value, pc );
       break;
     case 0xE4:  // INT8~15
     case 0xE5:  // INT0~7
@@ -971,10 +972,10 @@ void Machine::vkf11( void * context, int value )
   auto m = (Machine *)context;
   m->setRequestCpuCmd( cmdAnyBreak );
   // 専用機ｗ
-  if ( value )
-    //m->m_n80Load = m->n80Load( "Scramble.n80" );
-  else
-    //m->m_n80Load = m->n80Load( "Bug Fire.n80" );
+  //if ( value )
+  //  m->m_n80Load = m->n80Load( "Scramble.n80" );
+  //else
+  //  m->m_n80Load = m->n80Load( "Bug Fire.n80" );
   if ( m->m_n80Load )
     m->setRequestCpuCmd( cmdSetPCSP, m->m_requestPC, m->m_requestSP, 0 );
   m->setRequestCpuCmd( cmdContinue );
