@@ -70,6 +70,7 @@ N-BASIC な cmt ファイルとして color.cmt と mono.cmt をこのリポジ�
 
     NEC PC-8001    106/109キーボード
         STOP           ESC
+        ESC            TAB
         CTRL           左右 Ctrl & Caps Lock
         GRPH           左右 Alt
         INSDEL         Back space & Insert & Delete
@@ -122,7 +123,7 @@ F9 で開くメニューに「Disk Rom Disable」と出ているときに確定(
 F9 で開くメニューに「Disk Rom Enable」と出ているときに確定(Enter or マウスクリック)するとリセットがかかり Disk Unit から boot しようとします。<br>
 
 F9 で開くメニューの「Mount Disk」より fd0,fd1,(fd2,fd3) に挿入したい D88 ファイルを選択します。選択後 F12 でリセットです。場合によっては SHIFT+F12 でいけます。<br>
-F9 で開くメニューの「Unmount Disk」より fd0,fd1,(fd2,fd3) に排出したい D88 ファイルを選択します。<br>
+F9 で開くメニューの「Unmount Disk」より fd0,fd1,(fd2,fd3) から排出したい D88 ファイルを選択します。<br>
 
 2D タイプ(2head 40track 16sector 256sectorByte = 320KiB(327680byte))の D88 ファイル(348848byte)が対象です。<br>
 D88 ファイルは Read/Write されます。手持ちの D88 マスターファイルの消失には十分に注意して下さい。<br>
@@ -151,14 +152,76 @@ Disk Unit アクセス中を示す状態表示を画面右上にします。<br>
 Disk Unit シーク音(プランジャ動作音)を鳴動します。<br>
 システム全体動作安定の為 Disk Unit CPU(通称サブCPU)はタスクサスペンド/リジュームします。<br>
 
-# 9. Narya Ver 2.0 ボード向けパッチ
+# 9. 専用機化
+
+106/109キーボードの F11 押下でロード&実行の雛形を用意しています。
+
+    void Machine::vkf11( void * context, int value )
+    {
+      auto m = (Machine *)context;
+      m->setRequestCpuCmd( cmdAnyBreak );
+      //
+      // 専用機ｗ
+      // .n80 ファイル生成は t88tool.exe を使うと良いです(何をいまさらｗ)
+      // Windows (32bit/64bit) コマンドプロンプト内で動作します。
+      // https://bugfire2009.ojaru.jp/download.html#t88tool
+      // 
+      // .n80 生成例
+      // (1) xxx.cmt(マシン語) 実行開始アドレス 8150h
+      // c:\t88tool -n -E 8150 -f "xxx.n80" "xxx.cmt" 
+      //
+      // (2) yyy.cmt (BASIC) と  monyyy.cmt (マシン語) の場合
+      // c:\t88tool -n -f "yyy.n80" "yyy.bas" "monyyy.cmt"
+      //
+      //if ( !value )
+      //{
+      //  // VK_F11 押下
+      //  m->m_n80Load = m->n80Load( "Bug Fire.n80" );
+      //}
+      //else
+      //{
+      //  // SHIFT + VK_F11 押下
+      //  m->m_n80Load = m->n80Load( "Scramble.n80" );
+      //}
+      if ( m->m_n80Load )
+        m->setRequestCpuCmd( cmdSetPCSP, m->m_requestPC, m->m_requestSP, 0 );
+      m->setRequestCpuCmd( cmdContinue );
+    }
+
+F11 のみで任意のファイルをロード&実行した物があるときは以下のように改定します。
+
+      if ( !value )
+      {
+        // VK_F11 押下
+        m->m_n80Load = m->n80Load( "hoge.n80" );
+      }
+
+F11 と SHIFT+F11 で任意のファイルをロード&実行した物があるときは以下のように改定します。
+
+      if ( !value )
+      {
+        // VK_F11 押下
+        m->m_n80Load = m->n80Load( "hoge0.n80" );
+      }
+      else
+      {
+        // SHIFT + VK_F11 押下
+        m->m_n80Load = m->n80Load( "hoge1.n80" );
+      }
+
+# 10. Narya Ver 2.0 ボード向けパッチ
 
 以下の流れです。ホームディレクトリでパッチを行うと言う事です。Windows なので patch.exe が無い? 探して下さい(笑) もう Micro$oft な時代は終わってるから全部完全移植すればいいのに(草)
 
     $ cd
     $ patch -p0 < patch1.0.8/Narya.patch
 
-# 10. FabGL v1.0.6 を使いたい
+src/emu.h 改定
+
+    33 #define NARYA_2_0
+    34 //#define DONT_CMT_SAVE_INDICATOR
+
+# 11. FabGL v1.0.6 を使いたい
 
 と言う方(いわゆる安定志向)に向けたパッチも用意しています(笑)
 
@@ -173,7 +236,7 @@ Narya Ver 2.0 ボードの場合
     $ cd
     $ patch -p0 < patch1.0.6/Narya.patch
 
-# 11. 問題点
+# 12. 問題点
 
 Arduino ESP32 v1.0.6 & FabGL v1.0.8 を利用した場合<br>
 <br>
@@ -184,30 +247,39 @@ Arduino ESP32 v2.0.3 & FabGL v1.0.8 を利用した場合<br>
 より微妙に遅い。<br>
 boot 後、画面最上部にファンクションキーのゴミ表示が瞬時でる。<br>
 disk format(uPD765A write id)が MainCpuTask 側でタイムアウト。<br>
-  SD I/O 時間が Arduino ESP32 v2.0.2 より改善されてるが、やっぱり遅いのが原因<br>
-  Arduino ESP32 v1.0.6 で 80 track r/w _DEBUG モードで約 28 秒で OK<br>
-  Arduino ESP32 v2.0.3 で 50 track r/w _DEBUG モードで約 56 秒で NG<br>
-  n-disk basic(20-Sep-1981) format.DS は Disk I/O Error 検出<br>
-  s-dos 1.1 format は異常検知で自動 reboot<br>
-  CP/M 2.2 format.com は OK (55 秒内 80 track 完了判定は実装無し?ｗ)<br>
+~/Arduino/libraries/FabGL/src/fabutils.cpp の FileBrowser::mountSDCard にて速度制限があった。以下原文<br>
+<br>
+    1225  // slow down SD card. Using ESP32 core 2.0.0 may crash SD subsystem, having VGA output and WiFi enabled<br>
+    1226  // @TODO: check again<br>
+    1227  host.max_freq_khz = 19000;<br>
+<br>
+    マジか!? 試しに速度制限をコメントアウトして Arduino ESP32 v2.0.3 でビルト&書き込みしてみたら SD subsystem がクラッシュ<br>
+    することは無かった。SD subsystem がクラッシュした事があったから速度制限されたのだと思うので触らぬ神に祟りなしで速度制限有りで<br>
+    しばらく様子見。<br>
+    SD I/O 時間が Arduino ESP32 v2.0.2 より改善されてるが、やっぱり遅いのが原因<br>
+    Arduino ESP32 v1.0.6 で 80 track r/w _DEBUG モードで約 28 秒で OK<br>
+    Arduino ESP32 v2.0.3 で 50 track r/w _DEBUG モードで約 56 秒で NG<br>
+    n-disk basic(20-Sep-1981) format.DS は Disk I/O Error 検出<br>
+    s-dos 1.1 format は異常検知で自動 reboot<br>
+    CP/M 2.2 format.com は OK (55 秒内 80 track 完了判定は実装無し?ｗ)<br>
 <br>
 以下、Arduino ESP32 v1.0.6 & Arduino ESP32 v2.0.3 のどちらでも<br>
 <br>
 WIDTH 80,20 表示崩れ<br>
-  なして発生するのかわがんね。単体テストはOK。このモードは放置します。<br>
-  Arduino ESP32 v2.0.3 だとだいぶましだけど瞬時崩れが随時見える。<br>
-  やっぱ 200LINE をフォント高さ 10 でスキャンライン描画は想定外なのかも知れない。<br>
-  WIDTH 40,20 はいけてるのに。かなしすｗ<br>
+    なして発生するのかわがんね。単体テストはOK。このモードは放置します。<br>
+    Arduino ESP32 v2.0.3 だとだいぶましだけど瞬時崩れが随時見える。<br>
+    やっぱ 200LINE をフォント高さ 10 でスキャンライン描画は想定外なのかも知れない。<br>
+    WIDTH 40,20 はいけてるのに。かなしすｗ<br>
 <br>
 左ALTキー併用でテンキー(0〜9)GRAPH文字が入力出来ない<br>
-  右ALTキー併用はOK。回避策あるのでいいかとｗ<br>
+    右ALTキー併用はOK。回避策あるのでいいかとｗ<br>
 <br>
 beep音、seek音が微妙<br>
-  実機(PC-8001/PC-8033/PC-80S31)から生録したデータを<br>
-  FabGL準拠のサンプリングレート16kHz/mono/8bitデータ化で<br>
-  再生してるけど元がヘタれてる?(ｗ) やっぱコンデンサ全交換要かｗ<br>
+    実機(PC-8001/PC-8033/PC-80S31)から生録したデータを<br>
+    FabGL準拠のサンプリングレート16kHz/mono/8bitデータ化で<br>
+    再生してるけど元がヘタれてる?(ｗ) やっぱコンデンサ全交換要かｗ<br>
 
-# 12. 最後に
+# 13. 最後に
 
 超個人的には富士通 FM-8 で OS-9 をまた動かしたい派です。FabGL の emudevs に 6809 無いんです。ＰＩ．様のを移植って方法もあるけど...
 
