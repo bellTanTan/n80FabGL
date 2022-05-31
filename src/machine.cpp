@@ -67,6 +67,12 @@ Machine::Machine()
   memset( m_menu2FileName, 0, sizeof( m_menu2FileName ) );
   memset( m_fdImgFileName, 0, sizeof( m_fdImgFileName ) );
 
+  sprintf( m_version, "n80FabGL v%d.%d.%d SDK %s",
+           N80FABGL_VERSION_MAJOR,
+           N80FABGL_VERSION_MINOR,
+           N80FABGL_VERSION_REVISION,
+           ESP.getSdkVersion() );
+
   m_Z80.setCallbacks( this, readByte, writeByte, readWord, writeWord, readIO, writeIO );
 
   m_timerDiskCpuSuspendReset = 30 * 60 * 1000 * 1000;
@@ -197,10 +203,12 @@ void Machine::softReset( void * context )
   m->m_PCGMode         = 0;
   m->m_cmtLoad         = false;
   m->m_n80Load         = false;
+  m->m_CGA.enablePCG( m_PCGMode );
   m->m_BUZZER.reset( &m->m_soundGenerator );
   m->m_CALENDAR.reset( m->m_diskEnable, m->m_printerEnable );
   m->m_CMT.reset( vram, m->m_cmtBufferSize, m->m_cmtBuffer );
   m->m_CRT.reset( vram, m->m_frameBuffer );
+  m->m_DISK.softReset();
   m->m_KEYBRD.reset( vram, m->m_keyboard );
   m->m_PCG.reset( &m_FontPC8001, &m_FontPCG, &m_soundGenerator );
   m->m_PRINTER.reset( m->m_printerEnable );
@@ -971,11 +979,29 @@ void Machine::vkf11( void * context, int value )
 {
   auto m = (Machine *)context;
   m->setRequestCpuCmd( cmdAnyBreak );
+  //
   // 専用機ｗ
-  //if ( value )
-  //  m->m_n80Load = m->n80Load( "Scramble.n80" );
-  //else
+  // .n80 ファイル生成は t88tool.exe を使うと良いです(何をいまさらｗ)
+  // Windows (32bit/64bit) コマンドプロンプト内で動作します。
+  // https://bugfire2009.ojaru.jp/download.html#t88tool
+  // 
+  // .n80 生成例
+  // (1) xxx.cmt(マシン語) 実行開始アドレス 8150h
+  // c:\t88tool -n -E 8150 -f "xxx.n80" "xxx.cmt" 
+  //
+  // (2) yyy.cmt (BASIC) と  monyyy.cmt (マシン語) の場合
+  // c:\t88tool -n -f "yyy.n80" "yyy.bas" "monyyy.cmt"
+  //
+  //if ( !value )
+  //{
+  //  // VK_F11 押下
   //  m->m_n80Load = m->n80Load( "Bug Fire.n80" );
+  //}
+  //else
+  //{
+  //  // SHIFT + VK_F11 押下
+  //  m->m_n80Load = m->n80Load( "Scramble.n80" );
+  //}
   if ( m->m_n80Load )
     m->setRequestCpuCmd( cmdSetPCSP, m->m_requestPC, m->m_requestSP, 0 );
   m->setRequestCpuCmd( cmdContinue );

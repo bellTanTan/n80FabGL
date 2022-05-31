@@ -48,6 +48,7 @@
 using namespace fabgl;
 
 #include "emu.h"
+#include "version.h"
 #include "packeduPD3301adpter.h"
 #include "BUZZER.h"
 #include "CALENDAR.h"
@@ -123,6 +124,7 @@ public:
   void menuCmdEspRestart( void )            { m_menuCmdEspRestart = true; }
   bool getDiskRomEnable( void )             { return m_diskRomEnable; }
   bool get2kRomLoaded( void )               { return m_DISK.get2kRomLoaded(); }
+  const char * getVersionString( void )     { return &m_version[0]; }
 
   bool setDiskImage( int drive, bool writeProtected, const char * imgFileName );
   const char * getDiskImageFileName( int drive );  
@@ -260,6 +262,7 @@ static uint8_t *  s_videoMemory;            // fabgl VGA memory
   QueueHandle_t   m_queueHandle;            // queue handle
 #endif // _DEBUG
 
+  char            m_version[64];            // version
   TaskHandle_t    m_taskHandle;             // task handle
   uint32_t        m_ticksCounter;           // tick counter
   long            m_timerDiskCpuSuspend;

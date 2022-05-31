@@ -38,6 +38,15 @@
 //      微妙に遅い+
 //      boot 後、画面最上部にファンクションキーのゴミ表示が瞬時でる
 //      disk format(uPD765A write id)が MainCpuTask 側でタイムアウト
+//        ~/Arduino/libraries/FabGL/src/fabutils.cpp の FileBrowser::mountSDCard にて速度制限があった。以下原文
+//        
+//  1225  // slow down SD card. Using ESP32 core 2.0.0 may crash SD subsystem, having VGA output and WiFi enabled
+//  1226  // @TODO: check again
+//  1227  host.max_freq_khz = 19000;
+//
+//        マジか!? 試しに速度制限をコメントアウトして Arduino ESP32 v2.0.3 でビルト&書き込みしてみたら SD subsystem がクラッシュ
+//        することは無かった。SD subsystem がクラッシュした事があったから速度制限されたのだと思うので触らぬ神に祟りなしで速度制限有りで
+//        しばらく様子見。
 //        SD I/O 時間が v2.0.2 より改善されてるが、やっぱり遅いのが原因
 //        v1.0.6 で 80 track r/w _DEBUG モードで約 28 秒で OK
 //        v2.0.3 で 50 track r/w _DEBUG モードで約 56 秒で NG
@@ -135,7 +144,9 @@ void n80FabglMenu( void )
   drvItem[len-1] = 0;
   ibox.begin( VGA_640x480_60Hz, 500, 400, 4 );
   ibox.setBackgroundColor( RGB888( 0, 0, 0 ) );
-  int selCmd = ibox.menu( "Menu", "Select a command", menuItem );
+  char menuTitle[64];
+  sprintf( menuTitle, "menu %s", m->getVersionString() );
+  int selCmd = ibox.menu( menuTitle, "Select a command", menuItem );
   int drv;
 
   switch ( selCmd )

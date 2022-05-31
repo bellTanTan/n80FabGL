@@ -141,6 +141,7 @@ public:
   ~uPD765A();
 
   bool reset( bool * requestIRQ, media * disk, uint8_t * d88rwBuffer, SoundGenerator * soundGenerator );
+  void softReset( void )                    { bgmSeekEnd(); }
   int readIO( int address );
   void writeIO( int address, int value );
   void write_signal( int id );

@@ -73,6 +73,7 @@ public:
   void setScreenMode( int value );
 
   bool reset( uint8_t * vram, bool diskEnable, SoundGenerator * soundGenerator );
+  void softReset( void )                    { m_uPD765A.softReset(); }
 
   static int readByte( void * context, int address );
   static void writeByte( void * context, int address, int value );

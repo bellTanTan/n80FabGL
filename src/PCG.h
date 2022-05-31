@@ -79,7 +79,13 @@ public:
     m_param_hz = 3993600; // 3.9936MHz
     m_pcg_mode = 0;
 
-    if ( m_soundGenerator ) return true;
+    if ( m_soundGenerator )
+    {
+      sound_off( 0 );
+      sound_off( 1 );
+      sound_off( 2 );
+      return true;
+    }
 
     m_font    = font;
     m_fontPCG = fontPCG;
