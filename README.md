@@ -14,6 +14,19 @@ NEC PC-8001 エミュレータのため Disk Unit とのインターフェース
 各種 ROM ファイル、FONT ファイル、CMT ファイル、N80 ファイル、D88 ファイルの配布は致しません。手持ちが無くどうしてもと言う方は、歴史的文化的学術的な研究目的として
 [internet archive](https://archive.org/)で探して下さいｗ
 
+FabGL に指定する VGA 設定は以下のとおりです。
+エミュレーション側 VGA_640x200_60HzD
+メニュー側 VGA_640x480_60Hz
+
+VGA 表示確認/アナログ音声入力確認した液晶モニタ/液晶TV
+
+MITSUBISHI/RDT198LM-A(BK) 元々 4:3
+MITSUBISHI/RDT232WX(BK)   4:3 センター表示
+MITSUBISHI/RDT235WX(BK)   4:3 センター表示
+ASUS/VX238H-P             4:3 センター表示
+Panasonic/TH-P42G2        16:9 へ引き伸ばし表示
+SHARP/LC-32H11            4:3 センター表示
+
 # 3. ハード
 
 DEKO 様公開の[回路](https://ht-deko.com/arduino/fabgl.html) で動作確認済みです。
@@ -253,9 +266,7 @@ disk format(uPD765A write id)が MainCpuTask 側でタイムアウト。<br>
     1226  // @TODO: check again<br>
     1227  host.max_freq_khz = 19000;<br>
 <br>
-    マジか!? 試しに速度制限をコメントアウトして Arduino ESP32 v2.0.3 でビルト&書き込みしてみたら SD subsystem がクラッシュ<br>
-    することは無かった。SD subsystem がクラッシュした事があったから速度制限されたのだと思うので触らぬ神に祟りなしで速度制限有りで<br>
-    しばらく様子見。<br>
+    マジか!? 試しに速度制限をコメントアウトして Arduino ESP32 v2.0.3 でビルト&書き込みしてみたら SD subsystem がクラッシュすることは無かった。SD subsystem がクラッシュした事があったから速度制限されたのだと思うので触らぬ神に祟りなしで速度制限有りでしばらく様子見。<br>
     SD I/O 時間が Arduino ESP32 v2.0.2 より改善されてるが、やっぱり遅いのが原因<br>
     Arduino ESP32 v1.0.6 で 80 track r/w _DEBUG モードで約 28 秒で OK<br>
     Arduino ESP32 v2.0.3 で 50 track r/w _DEBUG モードで約 56 秒で NG<br>
