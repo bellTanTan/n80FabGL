@@ -14,18 +14,18 @@ NEC PC-8001 エミュレータのため Disk Unit とのインターフェース
 各種 ROM ファイル、FONT ファイル、CMT ファイル、N80 ファイル、D88 ファイルの配布は致しません。手持ちが無くどうしてもと言う方は、歴史的文化的学術的な研究目的として
 [internet archive](https://archive.org/)で探して下さいｗ
 
-FabGL に指定する VGA 設定は以下のとおりです。
-エミュレーション側 VGA_640x200_60HzD
-メニュー側 VGA_640x480_60Hz
+FabGL に指定する VGA 設定は以下のとおりです。<br>
+エミュレーション側 VGA_640x200_60HzD<br>
+メニュー側 VGA_640x480_60Hz<br>
 
-VGA 表示確認/アナログ音声入力確認した液晶モニタ/液晶TV
-
-MITSUBISHI/RDT198LM-A(BK) 元々 4:3
-MITSUBISHI/RDT232WX(BK)   4:3 センター表示
-MITSUBISHI/RDT235WX(BK)   4:3 センター表示
-ASUS/VX238H-P             4:3 センター表示
-Panasonic/TH-P42G2        16:9 へ引き伸ばし表示
-SHARP/LC-32H11            4:3 センター表示
+VGA 表示確認/アナログ音声入力確認した液晶モニタ/液晶TV<br>
+<br>
+MITSUBISHI/RDT198LM-A(BK) 元々 4:3<br>
+MITSUBISHI/RDT232WX(BK)   4:3 センター表示<br>
+MITSUBISHI/RDT235WX(BK)   4:3 センター表示<br>
+ASUS/VX238H-P             4:3 センター表示<br>
+Panasonic/TH-P42G2        16:9 へ引き伸ばし表示<br>
+SHARP/LC-32H11            4:3 センター表示<br>
 
 # 3. ハード
 
