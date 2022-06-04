@@ -1,0 +1,24 @@
+# File test001.asm
+0000			                ORG     06000H 
+6000			 
+6000			_USER_ROM_START: 
+6000 ..			                DB      "AB" 
+6002			_ENTRY: 
+6002 21 00 e0		                LD      HL,0E000H 
+6005 af			                XOR     A 
+6006 06 ff		                LD      B,255 
+6008			LOOP1: 
+6008 77			                LD      (HL),A 
+6009 23			                INC     HL 
+600a 3c			                INC     A 
+600b 10 fb		                DJNZ    LOOP1 
+600d c9			                RET 
+600e			 
+600e			_USER_ROM_END: 
+600e 0xff...		                DS      8192 - ( _USER_ROM_END - _USER_ROM_START ), 0FFH  
+8000			 
+8000			  	        END 
+			
+
+# End of file test001.asm
+8000

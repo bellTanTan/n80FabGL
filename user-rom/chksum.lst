@@ -1,0 +1,166 @@
+# File chksum.asm
+0000			                ORG	06000H 
+6000			 
+6000			ROM_DSPCHR:             EQU   00257H 
+6000			ROM_BEEP:               EQU   00350H 
+6000			ROM_WIDTH:              EQU   00843H 
+6000			ROM_CONSOLE:            EQU   00884H 
+6000			ROM_SCR2PRN:            EQU   0124AH 
+6000			ROM_DSPMSG:             EQU   052EDH 
+6000			ROM_MONERR:             EQU   05C5EH 
+6000			ROM_HEX4IN:             EQU   05E21H 
+6000			ROM_DSPHEX4:            EQU   05EC0H 
+6000			ROM_DSPHEX2:            EQU   05EC5H 
+6000			ROM_HLCPDE:             EQU   05ED3H 
+6000			ROM_DSPCRLF:            EQU   05FCAH 
+6000			ROM_DSPSPC:             EQU   05FD4H 
+6000			 
+6000			ROW_CHKSUM:             EQU   0EE00H 
+6000			TOTAL_CHKSUM:           EQU   0EE10H 
+6000			 
+6000			_USER_ROM_START: 
+6000			_ENTRY: 
+6000 21 f6 60		                LD      HL,T_WIDTH 
+6003 cd 43 08		                CALL    ROM_WIDTH 
+6006 21 fc 60		                LD      HL,T_CONSOLE 
+6009 cd 84 08		                CALL    ROM_CONSOLE 
+600c			INPUT_ADD: 
+600c 21 05 61		                LD      HL,T_INPUTMSG 
+600f cd ed 52		                CALL    ROM_DSPMSG 
+6012 21 00 00		                LD      HL,0 
+6015 11 00 00		                LD      DE,0 
+6018 cd 21 5e		                CALL    ROM_HEX4IN 
+601b 28 ef		                JR      Z,INPUT_ADD 
+601d eb			                EX      DE,HL 
+601e cd 21 5e		                CALL    ROM_HEX4IN 
+6021 20 e9		                JR      NZ,INPUT_ADD 
+6023 cd d3 5e		                CALL    ROM_HLCPDE 
+6026 38 e4		                JR      C,INPUT_ADD 
+6028 cd ca 5f		                CALL    ROM_DSPCRLF 
+602b eb			                EX      DE,HL 
+602c 7d			                LD      A,L 
+602d e6 f0		                AND     0F0H 
+602f 6f			                LD      L,A 
+6030 cd d4 5f		                CALL    ROM_DSPSPC 
+6033 cd ca 5f		                CALL    ROM_DSPCRLF 
+6036 d5			                PUSH    DE 
+6037 fd e1		                POP     IY 
+6039			L_NEXTBLK: 
+6039 e5			                PUSH    HL 
+603a 21 00 ee		                LD      HL,ROW_CHKSUM 
+603d af			                XOR     A 
+603e 06 11		                LD      B,17 
+6040			L_CLRSUM: 
+6040 77			                LD      (HL),A 
+6041 23			                INC     HL 
+6042 10 fc		                DJNZ    L_CLRSUM 
+6044 dd 21 10 ee	                LD      IX,TOTAL_CHKSUM 
+6048 cd ca 5f		                CALL    ROM_DSPCRLF 
+604b 21 16 61		                LD      HL,T_HEAD 
+604e cd ed 52		                CALL    ROM_DSPMSG 
+6051 cd ca 5f		                CALL    ROM_DSPCRLF 
+6054 06 10		                LD      B,16 
+6056			L_NEXTROW: 
+6056 e1			                POP     HL 
+6057 cd c0 5e		                CALL    ROM_DSPHEX4 
+605a 11 00 ee		                LD      DE,ROW_CHKSUM 
+605d cd d4 5f		                CALL    ROM_DSPSPC 
+6060 c5			                PUSH    BC 
+6061 06 10		                LD      B,16 
+6063			L_DSPROW: 
+6063 7e			                LD      A,(HL) 
+6064 f5			                PUSH    AF 
+6065 cd c5 5e		                CALL    ROM_DSPHEX2 
+6068 cd d4 5f		                CALL    ROM_DSPSPC 
+606b f1			                POP     AF 
+606c f5			                PUSH    AF 
+606d dd 86 00		                ADD     A,(IX+0) 
+6070 dd 77 00		                LD      (IX+0),A 
+6073 f1			                POP     AF 
+6074 eb			                EX      DE,HL 
+6075 86			                ADD     A,(HL) 
+6076 77			                LD      (HL),A 
+6077 eb			                EX      DE,HL 
+6078 23			                INC     HL 
+6079 1c			                INC     E 
+607a 10 e7		                DJNZ    L_DSPROW 
+607c e5			                PUSH    HL 
+607d c5			                PUSH    BC 
+607e 21 4f 61		                LD      HL,T_SUM 
+6081 cd ed 52		                CALL    ROM_DSPMSG 
+6084 c1			                POP     BC 
+6085 dd 7e 00		                LD      A,(IX+0) 
+6088 cd c5 5e		                CALL    ROM_DSPHEX2 
+608b cd ca 5f		                CALL    ROM_DSPCRLF 
+608e dd 36 00 00	                LD      (IX+0),0 
+6092 e1			                POP     HL 
+6093 e5			                PUSH    HL 
+6094 fd e5		                PUSH    IY 
+6096 d1			                POP     DE 
+6097 cd d3 5e		                CALL    ROM_HLCPDE 
+609a 30 08		                JR      NC,D_BTMSUM 
+609c e1			                POP     HL 
+609d c1			                POP     BC 
+609e e5			                PUSH    HL 
+609f 10 b5		                DJNZ    L_NEXTROW 
+60a1 e1			                POP     HL 
+60a2 d5			                PUSH    DE 
+60a3 e5			                PUSH    HL 
+60a4			D_BTMSUM: 
+60a4 06 38		                LD      B,56 
+60a6			L_SEPDSP: 
+60a6 21 51 61		                LD      HL,T_SEPARATE 
+60a9 c5			                PUSH    BC 
+60aa cd ed 52		                CALL    ROM_DSPMSG 
+60ad c1			                POP     BC 
+60ae 10 f6		                DJNZ    L_SEPDSP 
+60b0 cd ca 5f		                CALL    ROM_DSPCRLF 
+60b3 21 53 61		                LD      HL,T_BOTTOM 
+60b6 cd ed 52		                CALL    ROM_DSPMSG 
+60b9 11 00 ee		                LD      DE,ROW_CHKSUM 
+60bc 06 10		                LD      B,16 
+60be 0e 00		                LD      C,0 
+60c0			L_BTMSUM: 
+60c0 1a			                LD      A,(DE) 
+60c1 f5			                PUSH    AF 
+60c2 cd c5 5e		                CALL    ROM_DSPHEX2 
+60c5 cd d4 5f		                CALL    ROM_DSPSPC 
+60c8 f1			                POP     AF 
+60c9 81			                ADD     A,C 
+60ca 4f			                LD      C,A 
+60cb 1c			                INC     E 
+60cc 10 f2		                DJNZ    L_BTMSUM 
+60ce c5			                PUSH    BC 
+60cf 21 4f 61		                LD      HL,T_SUM 
+60d2 cd ed 52		                CALL    ROM_DSPMSG 
+60d5 c1			                POP     BC 
+60d6 79			                LD      A,C 
+60d7 cd c5 5e		                CALL    ROM_DSPHEX2 
+60da cd ca 5f		                CALL    ROM_DSPCRLF 
+60dd cd 4a 12		                CALL    ROM_SCR2PRN 
+60e0 3e 0c		                LD      A,12 
+60e2 cd 57 02		                CALL    ROM_DSPCHR 
+60e5 e1			                POP     HL 
+60e6 d1			                POP     DE 
+60e7 fd e5		                PUSH    IY 
+60e9 d1			                POP     DE 
+60ea cd d3 5e		                CALL    ROM_HLCPDE 
+60ed da 39 60		                JP      C,L_NEXTBLK 
+60f0 cd 50 03		                CALL    ROM_BEEP 
+60f3 c3 00 60		                JP      _ENTRY 
+60f6			 
+60f6 .. 00		T_WIDTH:        DB      "80,25", 0 
+60fc .. 00		T_CONSOLE:      DB      "0,25,0,0", 0 
+6105 .. 00		T_INPUTMSG:     DB      "Start,End Add ? ", 0 
+6116 .. 00		T_HEAD:         DB      "Add  +0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F Sum", 0 
+614f .. 00		T_SUM:          DB      ":", 0 
+6151 .. 00		T_SEPARATE:     DB      "-", 0 
+6153 .. 00		T_BOTTOM:       DB      "Sum  ", 0 
+6159			 
+6159 0xff...		_USER_ROM_END:  DS      8192 - ( _USER_ROM_END - _USER_ROM_START ), 0FFH 
+8000			 
+8000			  	        END 
+			
+
+# End of file chksum.asm
+8000

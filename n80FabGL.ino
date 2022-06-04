@@ -3,7 +3,7 @@
   Copyright (c) 2022 tan
   All rights reserved.
 
-  Arduino IDE board : Arduino ESP32 v1.0.6 or v2.0.3
+  Arduino IDE board :r Arduino ESP32 v1.0.6 or v2.0.3
   library           : FabGL v1.0.8
   target            : ESP32 DEV Module(ESP32-Wrover)
   flash size        : 4MB(32Mb)
@@ -75,6 +75,7 @@
 // +--PC8001
 // |  +-- PC-8001.ROM or 8801-N80.ROM
 // |  +-- PC-8001.FON
+// |  +-- USER.ROM       (OPTION) [8192bytes]
 // |  +-- PC-8031-2W.ROM (OPTION) [2048bytes]
 // |  +-- PC-80S31.ROM   (OPTION) [2048bytes=PC-8801mkIISR/FR/...]
 // |  +-- DISK.ROM       (OPTION) [8192bytes=PC-8801MA/MC/MH/...]

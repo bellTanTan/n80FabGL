@@ -187,6 +187,7 @@ int Machine::init( bool selDiskRomEnable )
   //debugBreak( true, 0 );
   //debugBreak( false, 0x813D );
   //debugBreak( false, 0xC000 );
+  //debugBreak( false, 0x6002 );
 #endif // _DEBUG
 
   m_beforeTickTime = micros();
@@ -238,6 +239,22 @@ bool Machine::romload( const char * fileName )
       romload = true;
   }
   fclose( fp );
+  if ( romload && fileSize == 24576 )
+  {
+    strcpy( path, SD_MOUNT_PATH );
+    strcat( path, PC8001_USEROM );
+    auto fp = fopen( path, "r" );
+    if ( fp )
+    {
+      fseek( fp, 0, SEEK_END );
+      size_t fileSize = ftell( fp );
+      fseek( fp, 0, SEEK_SET );
+      if ( fileSize > 8192 )
+        fileSize = 8192;
+      fread( &m_RAM[0x6000], 1, fileSize, fp );
+      fclose( fp );
+    }
+  }
   return romload;
 }
 

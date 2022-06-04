@@ -45,6 +45,7 @@
 
 #define SD_MOUNT_PATH           "/SD"
 #define PC8001ROM               "/PC8001/PC-8001.ROM"
+#define PC8001_USEROM           "/PC8001/USER.ROM"
 #define PC8801_N80ROM           "/PC8001/8801-N80.ROM"
 #define PC80312W_ROM            "/PC8001/PC-8031-2W.ROM"
 #define PC80S31_ROM             "/PC8001/PC-80S31.ROM"
@@ -52,9 +53,9 @@
 #define PC8001FONT              "/PC8001/PC-8001.FON"
 #define PC8001MEDIA             "/PC8001/MEDIA"
 #define PC8001MEDIA_DISK        "/PC8001/MEDIA/DISK"
-#define CMT_FILE_EXTENSION      ".CMT"
-#define N80_FILE_EXTENSION      ".N80"
-#define D88_FILE_EXTENSION      ".D88"
+#define CMT_FILE_EXTENSION      ".cmt"
+#define N80_FILE_EXTENSION      ".n80"
+#define D88_FILE_EXTENSION      ".d88"
 #define VIDEO_MEM_SIZE          (80 * 2 * 25)
 #define MAX_DRIVE               (4)
 
