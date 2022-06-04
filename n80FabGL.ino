@@ -3,7 +3,7 @@
   Copyright (c) 2022 tan
   All rights reserved.
 
-  Arduino IDE board :r Arduino ESP32 v1.0.6 or v2.0.3
+  Arduino IDE board : Arduino ESP32 v1.0.6 or v2.0.3
   library           : FabGL v1.0.8
   target            : ESP32 DEV Module(ESP32-Wrover)
   flash size        : 4MB(32Mb)
