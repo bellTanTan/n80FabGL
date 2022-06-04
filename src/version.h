@@ -23,6 +23,7 @@
  */
 
 // 更新履歴
+// 2022/06/04 v1.0.4 解説してる microSD の構造間違いを正した
 // 2022/06/04 v1.0.3 24KiB(24576byte)の本体 ROM をロード出来ている場合 USER.ROM ファイルを 6000H より最大 8192 byte 可にした
 //                   本体 ROM プログラムの規定どおり 6000H と 6001H が 41H('A') 42H('B') であるとき本体 ROM プログラムにより
 //                   6002H へ制御移行される
@@ -45,7 +46,7 @@
 
 #define N80FABGL_VERSION_MAJOR      1
 #define N80FABGL_VERSION_MINOR      0
-#define N80FABGL_VERSION_REVISION   3
+#define N80FABGL_VERSION_REVISION   4
 
 #define N80FABGL_VERSION            (  ((int)N80FABGL_VERSION_MAJOR) << 16 \
                                      | ((int)N80FABGL_VERSION_MINOR) << 8 \

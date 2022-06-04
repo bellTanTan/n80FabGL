@@ -73,19 +73,19 @@
 // microSD
 // /
 // +--PC8001
-// |  +-- PC-8001.ROM or 8801-N80.ROM
-// |  +-- PC-8001.FON
-// |  +-- USER.ROM       (OPTION) [8192bytes]
-// |  +-- PC-8031-2W.ROM (OPTION) [2048bytes]
-// |  +-- PC-80S31.ROM   (OPTION) [2048bytes=PC-8801mkIISR/FR/...]
-// |  +-- DISK.ROM       (OPTION) [8192bytes=PC-8801MA/MC/MH/...]
-// |
-// +--MEDIA
-//    +-- DISK
-//    |   +--- *.d88     (OPTION) 5.25 inch 2D Type
+//    +-- PC-8001.ROM or 8801-N80.ROM
+//    +-- PC-8001.FON
+//    +-- USER.ROM       (OPTION) [8192bytes]
+//    +-- PC-8031-2W.ROM (OPTION) [2048bytes]
+//    +-- PC-80S31.ROM   (OPTION) [2048bytes=PC-8801mkIISR/FR/...]
+//    +-- DISK.ROM       (OPTION) [8192bytes=PC-8801MA/MC/MH/...]
 //    |
-//    +-- *.cmt
-//    +-- *.n80
+//    +--MEDIA
+//       +-- DISK
+//       |   +--- *.d88  (OPTION) 5.25 inch 2D Type
+//       |
+//       +-- *.cmt
+//       +-- *.n80
 
 // F9  : open menu
 // F10 : PCG-8100 enable/disable (toggle)
