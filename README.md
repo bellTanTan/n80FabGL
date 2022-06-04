@@ -46,22 +46,23 @@ Narya Ver 2.0 ボードでは GPIO ピン配置が異なるため FabGL 向け�
     microSD
     /
     +--PC8001
-    |  +-- PC-8001.ROM or 8801-N80.ROM
-    |  +-- PC-8001.FON
-    |  +-- USER.ROM       (OPTION) [8192bytes]    
-    |  +-- PC-8031-2W.ROM (OPTION) [2048bytes]
-    |  +-- PC-80S31.ROM   (OPTION) [2048bytes=PC-8801mkIISR/FR/...]
-    |  +-- DISK.ROM       (OPTION) [8192bytes=PC-8801MA/MC/MH/...]
-    |
-    +--MEDIA
-       +-- DISK
-       |   +--- *.d88     (OPTION) 5.25 inch 2D Type
+       +-- PC-8001.ROM or 8801-N80.ROM
+       +-- PC-8001.FON
+       +-- USER.ROM       (OPTION) [8192bytes]    
+       +-- PC-8031-2W.ROM (OPTION) [2048bytes]
+       +-- PC-80S31.ROM   (OPTION) [2048bytes=PC-8801mkIISR/FR/...]
+       +-- DISK.ROM       (OPTION) [8192bytes=PC-8801MA/MC/MH/...]
        |
-       +-- *.cmt
-       +-- *.n80
+       +--MEDIA
+          +-- DISK
+          |   +--- *.d88     (OPTION) 5.25 inch 2D Type
+          |
+          +-- *.cmt
+          +-- *.n80
 
 PC-8001.ROM は 24KiB(24576byte) の物です。<br>
 8801-N80.ROM は 32KiB(32768byte) の物です。無くても支障ありません。<br>
+USER.ROM　は 8KiB(8192byte) の物です。無くても支障ありません。<br>
 PC-8031-2W.ROM は 2KiB(2048byte) の物です。無くても支障ありません。あると Disk Unit 構成ができます。<br>
 PC-80S31.ROM は 2KiB(2048byte) の物です。無くても支障ありません。あると Disk Unit 構成ができます。<br>
 (PC-80S31K は 8KiB(8192byte)のマスクROMだったような気がします。)<br>
