@@ -48,6 +48,7 @@ Narya Ver 2.0 ボードでは GPIO ピン配置が異なるため FabGL 向け�
     +--PC8001
     |  +-- PC-8001.ROM or 8801-N80.ROM
     |  +-- PC-8001.FON
+    |  +-- USER.ROM       (OPTION) [8192bytes]    
     |  +-- PC-8031-2W.ROM (OPTION) [2048bytes]
     |  +-- PC-80S31.ROM   (OPTION) [2048bytes=PC-8801mkIISR/FR/...]
     |  +-- DISK.ROM       (OPTION) [8192bytes=PC-8801MA/MC/MH/...]
