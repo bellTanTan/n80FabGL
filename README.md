@@ -74,7 +74,7 @@ PC-8001.FON は手持ちの 2048 byte のファイルを利用しても構いま
 
 cmt ファイル、n80 ファイル、d88 ファイルはそれぞれの箇所へ配置します。
 
-N-BASIC な cmt ファイルとして color.cmt と mono.cmt をこのリポジトリ MEDIA フォルダに入れています。動作確認の一つとして利用して下さい。
+N-BASIC な cmt ファイルとして color.cmt , mono.cmt , mandel.cmt をこのリポジトリ MEDIA フォルダに入れています。動作確認の一つとして利用して下さい。
 
 # 5. 操作
 
