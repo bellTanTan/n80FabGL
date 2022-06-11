@@ -165,11 +165,7 @@ private:
   void cmt_cmd( int value )
   {
     if ( value == 0x40 )
-    {
       m_reset = true;
-      if ( m_buff )
-        m_index = 0;
-    }
 #ifndef DONT_CMT_SAVE_INDICATOR
     if ( value == 0x11 )
       m_vram[ m_statusAdrs ] = '#';

@@ -45,11 +45,12 @@ using namespace fabgl;
 #define _OCW5             (5)
 #define _STOP_DISPLAY     (0x02)
 #define _START_DISPLAY    (0xFD)
-#define _OCW1_DM          (0x01)	//0:normal, 1:reverse
+#define _OCW1_DM          (0x01)	// 0:normal, 1:reverse
 
 #define _EN_DMA_CH2       (0x04)
 #define _DISABLE_DMA_CH2  (0x04)
 #define _ENABLE_DMA_CH2   (0xFB)
+#define _DMA_UPDATE_FLAG  (0x10)
 #define _AUTOLOAD         (0x80)
 
 
@@ -73,6 +74,7 @@ public:
 
   void tick( int cycles );
 
+  uint8_t getCrtcTextVisible( void )      { return m_crtc_text_visible; }
   uint32_t getDmacPenarty( void )         { return m_dmac_penarty; }
   void setDmacPenarty( uint32_t value )   { m_dmac_penarty = value; }
 

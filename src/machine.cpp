@@ -329,6 +329,17 @@ bool Machine::fontload( const char * fileName )
   uint8_t *       des = (uint8_t *)m_FontPCG.data;
   memcpy( des, src, 2048 );
 
+  // Font definition in PCG FCH
+  uint8_t * fontPCG_CodeFC = (uint8_t *)&m_FontPCG.data[0xFC*8];
+  fontPCG_CodeFC[0] = 0xBD;
+  fontPCG_CodeFC[1] = 0x5E;
+  fontPCG_CodeFC[2] = 0xCE;
+  fontPCG_CodeFC[3] = 0xB4;
+  fontPCG_CodeFC[4] = 0xA5;
+  fontPCG_CodeFC[5] = 0x01;
+  fontPCG_CodeFC[6] = 0x05;
+  fontPCG_CodeFC[7] = 0x8A;
+
   return true;
 }
 
@@ -563,17 +574,21 @@ void IRAM_ATTR Machine::cpuTask( void * pvParameters )
       cycles = m->m_Z80.step();
 #endif // _DEBUG
     }
-    // time in microseconds
-    uint32_t t1 = micros();
-    int dt = t1 - t0;
-    if ( dt < 0 )
-      dt = t1 + ( 0xFFFFFFFF - t0 );
 
-    // at 2MHz each cycle last 0.5us, so instruction time is cycles*0.5, that is cycles/2
-    // NEC PC-8001 4MHz
-    int t = ( cycles / 4 ) - dt;
-    if ( t > 0 )
-      delayMicroseconds( t );
+    if ( m->m_CRT.getCrtcTextVisible() == 0 )
+    {
+      // time in microseconds
+      uint32_t t1 = micros();
+      int dt = t1 - t0;
+      if ( dt < 0 )
+        dt = t1 + ( 0xFFFFFFFF - t0 );
+
+      // at 2MHz each cycle last 0.5us, so instruction time is cycles*0.5, that is cycles/2
+      // NEC PC-8001 4MHz
+      int t = ( cycles / 4 ) - dt;
+      if ( t > 0 )
+        delayMicroseconds( t );
+    }
 
     // tick counter up
     m->m_ticksCounter++;
@@ -723,6 +738,9 @@ int Machine::readIO( void * context, int address )
     case 0xDA:
       // ignore
       _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] IEEE-488\r\n", __func__, __LINE__, address, value, pc );
+      break;
+    case 0xE2:
+      value = m->m_portE2writeData & 0x0F;
       break;
     case 0xFC:
     case 0xFE:

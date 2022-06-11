@@ -25,7 +25,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <string.h>
 #include <stdarg.h>
 #include <string.h>
 

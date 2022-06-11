@@ -23,6 +23,14 @@
  */
 
 // 更新履歴
+// 2022/06/11 v1.0.5 DMA OFF (I/O ポート 68H へ 0 または I/O ポート 51H へ 0)で画面表示停止忘れ。
+//                   DMA OFF での速度UP忘れ。
+//                   I/O ポート E2 リードでバンク選択状態を返すようにした。
+//                   起動時 PCG-8100 フォント 0xFC に、ぽいフォント定義(Okの後に出る例のアレが無いとON/OFF判別できないと言う旧友の意見ｗ) 
+//                   tako2 様公開の倉庫番(https://github.com/tako2/pc8001-games/tree/main/sokoban)
+//                   対応(PCG-8100 有効描画と簡易グラフックス描画の両立不良改修)
+// 2022/06/08        bugfire2009 様公開の DumpListEditor(http://bugfire2009.ojaru.jp/input.html)
+//                   cmt 2段階ロード(cmt自動起動)できない不良改修
 // 2022/06/04 v1.0.4 解説してる microSD の構造間違いを正した
 // 2022/06/04 v1.0.3 24KiB(24576byte)の本体 ROM をロード出来ている場合 USER.ROM ファイルを 6000H より最大 8192 byte 可にした
 //                   本体 ROM プログラムの規定どおり 6000H と 6001H が 41H('A') 42H('B') であるとき本体 ROM プログラムにより
@@ -46,7 +54,7 @@
 
 #define N80FABGL_VERSION_MAJOR      1
 #define N80FABGL_VERSION_MINOR      0
-#define N80FABGL_VERSION_REVISION   4
+#define N80FABGL_VERSION_REVISION   5
 
 #define N80FABGL_VERSION            (  ((int)N80FABGL_VERSION_MAJOR) << 16 \
                                      | ((int)N80FABGL_VERSION_MINOR) << 8 \

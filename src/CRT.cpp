@@ -923,6 +923,8 @@ void CRT::vram2FrameBuffer( void )
     {
       uint8_t code = *txts;
       uint8_t pack = *pacs;
+      if ( m_crtc_text_visible != 0 )
+        pack = 0x40;
       *(frameBuffer++) = code;
       *(frameBuffer++) = pack;
       txts += colAddCount;

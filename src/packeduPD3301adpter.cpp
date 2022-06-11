@@ -324,11 +324,11 @@ void IRAM_ATTR packeduPD3301adpter::drawScanline_PC_Text_40x20_8Colors( void * a
     int charIdx  = *curItem++;
     int charAttr = *curItem++;
 
-    bool upperLine  =  ( charAttr & 0x08 );
-    bool normalFont = !( charAttr & 0x10 );
-    bool reverse    =  ( charAttr & 0x20 );
-    bool erase      =  ( charAttr & 0x40 );
-    bool underLine  =  ( charAttr & 0x80 );
+    bool upperLine = charAttr & 0x08;
+    bool graphFont = charAttr & 0x10;
+    bool reverse   = charAttr & 0x20;
+    bool erase     = charAttr & 0x40;
+    bool underLine = charAttr & 0x80;
 
     uint8_t color = charAttr & 0x07;
     uint8_t bg = reverse ? rawLUT[ color ] : rawLUT[0];
@@ -336,11 +336,11 @@ void IRAM_ATTR packeduPD3301adpter::drawScanline_PC_Text_40x20_8Colors( void * a
 
     const uint8_t colors[2] = { bg, fg };
 
-    uint8_t const * charBitmapPtr = ga->m_enablePCG
+    uint8_t const * charBitmapPtr = graphFont
+                                    ? fontDataGraph + charIdx * CHARSIZEINBYTES
+                                    : ( ga->m_enablePCG && charIdx >= 0x80 && charIdx <= 0xFF )
                                     ? fontDataPCG   + charIdx * CHARSIZEINBYTES
-                                    : normalFont
-                                    ? fontData      + charIdx * CHARSIZEINBYTES
-                                    : fontDataGraph + charIdx * CHARSIZEINBYTES;
+                                    : fontData      + charIdx * CHARSIZEINBYTES;
 
     auto destptr = dest;
 
@@ -486,11 +486,11 @@ void IRAM_ATTR packeduPD3301adpter::drawScanline_PC_Text_40x25_8Colors( void * a
     int charIdx  = *curItem++;
     int charAttr = *curItem++;
 
-    bool upperLine  =  ( charAttr & 0x08 );
-    bool normalFont = !( charAttr & 0x10 );
-    bool reverse    =  ( charAttr & 0x20 );
-    bool erase      =  ( charAttr & 0x40 );
-    bool underLine  =  ( charAttr & 0x80 );
+    bool upperLine = charAttr & 0x08;
+    bool graphFont = charAttr & 0x10;
+    bool reverse   = charAttr & 0x20;
+    bool erase     = charAttr & 0x40;
+    bool underLine = charAttr & 0x80;
 
     uint8_t color = charAttr & 0x07;
     uint8_t bg = reverse ? rawLUT[ color ] : rawLUT[0];
@@ -498,11 +498,11 @@ void IRAM_ATTR packeduPD3301adpter::drawScanline_PC_Text_40x25_8Colors( void * a
 
     const uint8_t colors[2] = { bg, fg };
 
-    uint8_t const * charBitmapPtr = ga->m_enablePCG
+    uint8_t const * charBitmapPtr = graphFont
+                                    ? fontDataGraph + charIdx * CHARSIZEINBYTES
+                                    : ( ga->m_enablePCG && charIdx >= 0x80 && charIdx <= 0xFF )
                                     ? fontDataPCG   + charIdx * CHARSIZEINBYTES
-                                    : normalFont
-                                    ? fontData      + charIdx * CHARSIZEINBYTES
-                                    : fontDataGraph + charIdx * CHARSIZEINBYTES;
+                                    : fontData      + charIdx * CHARSIZEINBYTES;
 
     auto destptr = dest;
 
@@ -619,11 +619,11 @@ void IRAM_ATTR packeduPD3301adpter::drawScanline_PC_Text_80x20_8Colors( void * a
     int charIdx  = *curItem++;
     int charAttr = *curItem++;
 
-    bool upperLine  =  ( charAttr & 0x08 );
-    bool normalFont = !( charAttr & 0x10 );
-    bool reverse    =  ( charAttr & 0x20 );
-    bool erase      =  ( charAttr & 0x40 );
-    bool underLine  =  ( charAttr & 0x80 );
+    bool upperLine = charAttr & 0x08;
+    bool graphFont = charAttr & 0x10;
+    bool reverse   = charAttr & 0x20;
+    bool erase     = charAttr & 0x40;
+    bool underLine = charAttr & 0x80;
 
     uint8_t color = charAttr & 0x07;
     uint8_t bg = reverse ? rawLUT[ color ] : rawLUT[0];
@@ -631,11 +631,11 @@ void IRAM_ATTR packeduPD3301adpter::drawScanline_PC_Text_80x20_8Colors( void * a
 
     const uint8_t colors[2] = { bg, fg };
 
-    uint8_t const * charBitmapPtr = ga->m_enablePCG
+    uint8_t const * charBitmapPtr = graphFont
+                                    ? fontDataGraph + charIdx * CHARSIZEINBYTES
+                                    : ( ga->m_enablePCG && charIdx >= 0x80 && charIdx <= 0xFF )
                                     ? fontDataPCG   + charIdx * CHARSIZEINBYTES
-                                    : normalFont
-                                    ? fontData      + charIdx * CHARSIZEINBYTES
-                                    : fontDataGraph + charIdx * CHARSIZEINBYTES;
+                                    : fontData      + charIdx * CHARSIZEINBYTES;
 
     auto destptr = dest;
 
@@ -764,11 +764,11 @@ void IRAM_ATTR packeduPD3301adpter::drawScanline_PC_Text_80x25_8Colors( void * a
     int charIdx  = *curItem++;
     int charAttr = *curItem++;
 
-    bool upperLine  =  ( charAttr & 0x08 );
-    bool normalFont = !( charAttr & 0x10 );
-    bool reverse    =  ( charAttr & 0x20 );
-    bool erase      =  ( charAttr & 0x40 );
-    bool underLine  =  ( charAttr & 0x80 );
+    bool upperLine = charAttr & 0x08;
+    bool graphFont = charAttr & 0x10;
+    bool reverse   = charAttr & 0x20;
+    bool erase     = charAttr & 0x40;
+    bool underLine = charAttr & 0x80;
 
     uint8_t color = charAttr & 0x07;
     uint8_t bg = reverse ? rawLUT[ color ] : rawLUT[0];
@@ -776,11 +776,11 @@ void IRAM_ATTR packeduPD3301adpter::drawScanline_PC_Text_80x25_8Colors( void * a
 
     const uint8_t colors[2] = { bg, fg };
 
-    uint8_t const * charBitmapPtr = ga->m_enablePCG
+    uint8_t const * charBitmapPtr = graphFont
+                                    ? fontDataGraph + charIdx * CHARSIZEINBYTES
+                                    : ( ga->m_enablePCG && charIdx >= 0x80 && charIdx <= 0xFF )
                                     ? fontDataPCG   + charIdx * CHARSIZEINBYTES
-                                    : normalFont
-                                    ? fontData      + charIdx * CHARSIZEINBYTES
-                                    : fontDataGraph + charIdx * CHARSIZEINBYTES;
+                                    : fontData      + charIdx * CHARSIZEINBYTES;
 
     auto destptr = dest;
 
