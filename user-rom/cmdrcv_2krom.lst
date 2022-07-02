@@ -1,0 +1,773 @@
+# File cmdrcv_2krom.asm
+0000			                ORG     07800H 
+7800			                ;ORG     06000H 
+7800			                ;DS      8192 - 2048, 0FFH 
+7800			_USER_ROM_START: 
+7800			_PROG_TOP: 
+7800 cd 10 78		                CALL    _ENTRY 
+7803 c3 35 5c		                JP      ROM_MON_UNEXT 
+7806 00			                NOP 
+7807 00			                NOP 
+7808 00			                NOP 
+7809 00			                NOP 
+780a 00			                NOP 
+780b 00			                NOP 
+780c 00			                NOP 
+780d 01			                DB      VER_MAJOR 
+780e 01			                DB      VER_MINOR 
+780f 00			                DB      VER_REVISION 
+7810			_ENTRY: 
+7810 c5			                PUSH    BC 
+7811 d5			                PUSH    DE 
+7812 e5			                PUSH    HL 
+7813 21 22 78		                LD      HL,NEWJPTBL 
+7816 11 fc f0		                LD      DE,CMD_ENTRY 
+7819 01 03 00		                LD      BC,3 
+781c ed b0		                LDIR 
+781e e1			                POP     HL 
+781f d1			                POP     DE 
+7820 c1			                POP     BC 
+7821 c9			                RET 
+7822			NEWJPTBL: 
+7822 c3 25 78		                JP      NEW_CMD 
+7825			NEW_CMD: 
+7825			                INCLUDE "cmdrcv.asm" 
+7825			; PARITY           : E EVEN 
+7825			;                  : O ODD 
+7825			;                  : N NON 
+7825			; DATA BITS        : 8 8BITS 
+7825			;                  : 7 7BITS 
+7825			; STOP BITS        : 1 1BIT 
+7825			;                  : 2 1.5BITS 
+7825			;                  : 3 2BITS 
+7825			; BAUD RATE FACTOR : 0 64X 
+7825			;                  : 1 16X 
+7825			; ex. E730,O710,N810 
+7825			; ex. E731,O711,N811 
+7825			; 
+7825			; CMD RCV,N811,&HD000[,&HD000] 
+7825			; CMD RCV,N811,BAS 
+7825			; 
+7825			; 
+7825			; CONSTANT CONTROL CODE 
+7825			; 
+7825			SOH:            EQU     01H 
+7825			STX:            EQU     02H 
+7825			EOT:            EQU     04H 
+7825			ACK:            EQU     06H 
+7825			NAK:            EQU     15H 
+7825			CAN:            EQU     18H 
+7825			; 
+7825			; CONSTANT I/O PORT 
+7825			; 
+7825			KEYBRD9:        EQU     09H 
+7825			USARTDW:        EQU     20H 
+7825			USARTCW:        EQU     21H             ; MODE SETUP 
+7825			                                        ; 76543210 
+7825			                                        ; ||||||++--- BAUD RATE FACTOR 
+7825			                                        ; ||||||      00 : SYNC MODE 
+7825			                                        ; ||||||      01 : 1X 
+7825			                                        ; ||||||      10 : 16X 
+7825			                                        ; ||||||      11 : 64X 
+7825			                                        ; ||||++----- CHARACTER LENGTH 
+7825			                                        ; ||||        00 : 5BITS 
+7825			                                        ; ||||        01 : 6BITS 
+7825			                                        ; ||||        10 : 7BITS 
+7825			                                        ; ||||        11 : 8BITS 
+7825			                                        ; |||+------- PARITY ENABLE 
+7825			                                        ; |||         1 : ENABLE 
+7825			                                        ; |||         0 : DISABLE 
+7825			                                        ; ||+-------- EVEN PARITY GENARATION/CHECK 
+7825			                                        ; ||          1 : EVEN 
+7825			                                        ; ||          0 : ODD 
+7825			                                        ; ++--------- NUMBER OF STOP BITS 
+7825			                                        ;             00 : INVALID 
+7825			                                        ;             01 : 1 BIT 
+7825			                                        ;             10 : 1.5 BITS 
+7825			                                        ;             11 : 2 BITS 
+7825			                                        ; 
+7825			                                        ; COMMAND SETUP 
+7825			                                        ; 76543210 
+7825			                                        ; |||||||+--- TRANSMIT ENABLE 
+7825			                                        ; |||||||     1 : ENABLE 
+7825			                                        ; |||||||     0 : DISABLE 
+7825			                                        ; ||||||+---- DATA TERMINAL READY 
+7825			                                        ; ||||||      "high" will force ~DTR output zero 
+7825			                                        ; |||||+----- RECEIVE ENABLE 
+7825			                                        ; |||||       1 : ENABLE 
+7825			                                        ; |||||       0 : DISABLE 
+7825			                                        ; ||||+------ SEND BREAK CHARACTER 
+7825			                                        ; ||||        1 : forces TxD "low" 
+7825			                                        ; ||||        0 : normal operation 
+7825			                                        ; |||+------- ERROR RESET 
+7825			                                        ; |||         1 : reset all error flags PE,OE,FE 
+7825			                                        ; ||+-------- REQUEST TO SEND 
+7825			                                        ; ||          "high" will force ~RTS output zero 
+7825			                                        ; |+--------- INTERNAL RESET 
+7825			                                        ; |           "high" returns USART to Mode Instruction Format 
+7825			                                        ; +---------- ENTER HUNT MODE 
+7825			                                        ;             1 = enable search for Sync Characters 
+7825			CONTROL1:       EQU     30H 
+7825			; 
+7825			; CONSTANT ROM BASIC ROUTINE 
+7825			; 
+7825			ROM_BASPROMPT:  EQU     0081H 
+7825			ROM_DSPCHR:     EQU     0257H 
+7825			ROM_BEEP:       EQU     0D43H 
+7825			ROM_TIMEREAD:   EQU     1602H 
+7825			ROM_SYNERR:     EQU     3BDFH 
+7825			ROM_MSGOUT:     EQU     52EDH 
+7825			ROM_MON_UNEXT:  EQU     5C35H 
+7825			ROM_DSPHEX4:    EQU     5EC0H 
+7825			ROM_CMPHLDE:    EQU     5ED3H 
+7825			ROM_DSPCRLF:    EQU     5FCAH 
+7825			; 
+7825			; CONSTANT ROM BASIC WORD AREA 
+7825			; 
+7825			PC8001RAM_TOP:  EQU     8000H 
+7825			ROMBAS_WORKTOP: EQU     0EA00H 
+7825			CURSOR_YPOS:    EQU     0EA63H 
+7825			CURSOR_XPOS:    EQU     0EA64H 
+7825			CTL1_OUTDATA:   EQU     0EA66H 
+7825			BCD_TIME_SEC:   EQU     0EA76H 
+7825			OUTPUT_DEVICE:  EQU     0EB49H 
+7825			BASAREA_TOP:    EQU     0EB54H 
+7825			VARAREA_TOP:    EQU     0EFA0H 
+7825			ARRAYAREA_TOP:  EQU     0EFA2H 
+7825			FREEAREA_TOP:   EQU     0EFA4H 
+7825			CMD_ENTRY:      EQU     0F0FCH 
+7825			; 
+7825			; N-BASIC ROM FREE AREA1 : F216~F2FF 
+7825			; N-BASIC ROM FREE AREA2 : FF3D~FFFF 
+7825			; CONSTANT "CMD RCV" WORK AREA 
+7825			; 
+7825			MODEWORD:       EQU     0F216H 
+7825			CTLWORD:        EQU     0F217H 
+7825			LOADADRS:       EQU     0F218H 
+7825			EXECADRS:       EQU     0F21AH 
+7825			FLGLOADBAS:     EQU     0F21CH 
+7825			TIMEUP:         EQU     0F21DH 
+7825			CHKBLKNO:       EQU     0F21EH 
+7825			RCVBUF_TOP:     EQU     0F22FH 
+7825			RCVBUF_HEADER:  EQU     RCVBUF_TOP 
+7825			RCVBUF_BLKNO:   EQU     RCVBUF_TOP +1 
+7825			RCVBUF_CBLKNO:  EQU     RCVBUF_TOP +2 
+7825			RCVBUF_DATA:    EQU     RCVBUF_TOP +3 
+7825			RCVBUF_CHKSUM:  EQU     RCVBUF_DATA +128 
+7825			RCVBUF_BOTTOM:  EQU     RCVBUF_CHKSUM 
+7825			; 
+7825			; CONSTANT "CMD RCV" VERSION DATA 
+7825			; 
+7825			VER_MAJOR:      EQU     1 
+7825			VER_MINOR:      EQU     1 
+7825			VER_REVISION:   EQU     0 
+7825			; 
+7825			                ;ORG    0H 
+7825			CMD_START: 
+7825 cd 18 79		                CALL    PARSER_CMDPARAM 
+7828 da 14 79		                JP      C,CMD_ERR_EXIT 
+782b			 
+782b e5			                PUSH    HL 
+782c cd ef 7a		                CALL    INIT_SIO 
+782f 3e 01		                LD      A,1 
+7831 32 1e f2		                LD      (CHKBLKNO),A 
+7834			CMD_L010: 
+7834 3e 15		                LD      A,NAK 
+7836 cd aa 7b		                CALL    OUT_SIO 
+7839 da 0a 79		                JP      C,CMD_CANCEL 
+783c			CMD_L020: 
+783c cd 66 7b		                CALL    IN_SIO 
+783f da 0a 79		                JP      C,CMD_CANCEL 
+7842 fe 04		                CP      EOT 
+7844 28 73		                JR      Z,CMD_030 
+7846 fe 01		                CP      SOH 
+7848 28 21		                JR      Z,CMD_010 
+784a 3a 1d f2		                LD      A,(TIMEUP) 
+784d fe 01		                CP      1 
+784f 28 e3		                JR      Z,CMD_L010 
+7851 18 e9		                JR      CMD_L020 
+7853			CMD_L030: 
+7853 cd 66 7b		                CALL    IN_SIO 
+7856 da 0a 79		                JP      C,CMD_CANCEL 
+7859 fe 04		                CP      EOT 
+785b 28 5c		                JR      Z,CMD_030 
+785d fe 01		                CP      SOH 
+785f 28 0a		                JR      Z,CMD_010 
+7861 3a 1d f2		                LD      A,(TIMEUP) 
+7864 fe 01		                CP      1 
+7866 ca f6 78		                JP      Z,CMD_CANCEL2 
+7869 18 e8		                JR      CMD_L030 
+786b			CMD_010: 
+786b cd 67 7a		                CALL    CLR_RCVBUF 
+786e 77			                LD      (HL),A 
+786f 23			                INC     HL 
+7870 06 83		                LD      B,131 
+7872			CMD_L040: 
+7872 cd 66 7b		                CALL    IN_SIO 
+7875 da 0a 79		                JP      C,CMD_CANCEL 
+7878 f5			                PUSH    AF 
+7879 3a 1d f2		                LD      A,(TIMEUP) 
+787c fe 01		                CP      1 
+787e 28 75		                JR      Z,CMD_CANCEL3 
+7880 f1			                POP     AF 
+7881 77			                LD      (HL),A 
+7882 23			                INC     HL 
+7883 10 ed		                DJNZ    CMD_L040 
+7885			; 
+7885 cd 5e 7b		                CALL    DISABLE_RTS 
+7888 cd 9e 7a		                CALL    CHKDATA 
+788b 38 20		                JR      C,CMD_020 
+788d cd 76 7a		                CALL    CHK_MEMOVER 
+7890 38 64		                JR      C,CMD_CANCEL2 
+7892 21 32 f2		                LD      HL,RCVBUF_DATA 
+7895 01 80 00		                LD      BC,128 
+7898 ed b0		                LDIR 
+789a cd cb 7a		                CALL    DISP_PROGRESS 
+789d cd 56 7b		                CALL    ENABLE_RTS 
+78a0			; 
+78a0 3e 06		                LD      A,ACK 
+78a2 cd aa 7b		                CALL    OUT_SIO         
+78a5 38 63		                JR      C,CMD_CANCEL 
+78a7 21 1e f2		                LD      HL,CHKBLKNO 
+78aa 34			                INC     (HL) 
+78ab 18 a6		                JR      CMD_L030 
+78ad			CMD_020: 
+78ad cd 56 7b		                CALL    ENABLE_RTS 
+78b0 3e 15		                LD      A,NAK 
+78b2 cd aa 7b		                CALL    OUT_SIO         
+78b5 38 53		                JR      C,CMD_CANCEL 
+78b7 18 9a		                JR      CMD_L030 
+78b9			CMD_030: 
+78b9 3e 06		                LD      A,ACK 
+78bb cd aa 7b		                CALL    OUT_SIO 
+78be cd 10 7b		                CALL    TERM_SIO 
+78c1 e1			                POP     HL 
+78c2 3a 1c f2		                LD      A,(FLGLOADBAS) 
+78c5 fe 01		                CP      1 
+78c7 28 10		                JR      Z,CMD_FIXBAS 
+78c9 e5			                PUSH    HL 
+78ca 21 00 00		                LD      HL,0 
+78cd ed 5b 1a f2	                LD      DE,(EXECADRS) 
+78d1 cd d3 5e		                CALL    ROM_CMPHLDE     ;         Z CY 
+78d4			                                        ; HL<DE : 0  1 
+78d4			                                        ; HL=DE : 1  0 
+78d4			                                        ; HL>DE : 0  0 
+78d4 e1			                POP     HL 
+78d5 28 3c		                JR      Z,CMD_EXIT 
+78d7 eb			                EX      DE,HL 
+78d8 e9			                JP      (HL) 
+78d9			CMD_FIXBAS: 
+78d9 e5			                PUSH    HL 
+78da d5			                PUSH    DE 
+78db 2a 18 f2		                LD      HL,(LOADADRS) 
+78de eb			                EX      DE,HL 
+78df ed 52		                SBC     HL,DE 
+78e1 e5			                PUSH    HL 
+78e2 c1			                POP     BC 
+78e3 e1			                POP     HL 
+78e4 af			                XOR     A 
+78e5 ed b9		                CPDR 
+78e7 23			                INC     HL 
+78e8 23			                INC     HL 
+78e9 22 a0 ef		                LD      (VARAREA_TOP),  HL 
+78ec 22 a2 ef		                LD      (ARRAYAREA_TOP),HL 
+78ef 22 a4 ef		                LD      (FREEAREA_TOP), HL 
+78f2 e1			                POP     HL 
+78f3 18 1e		                JR      CMD_EXIT 
+78f5			CMD_CANCEL3: 
+78f5 f1			                POP     AF 
+78f6			CMD_CANCEL2: 
+78f6 cd ca 5f		                CALL    ROM_DSPCRLF 
+78f9 af			                XOR     A 
+78fa 32 49 eb		                LD      (OUTPUT_DEVICE),A 
+78fd 3c			                INC     A 
+78fe 32 64 ea		                LD      (CURSOR_XPOS),A 
+7901 21 c2 7b		                LD      HL,ERR_MSG 
+7904 cd ed 52		                CALL    ROM_MSGOUT 
+7907 cd 43 0d		                CALL    ROM_BEEP 
+790a			CMD_CANCEL: 
+790a 3e 18		                LD      A,CAN 
+790c cd aa 7b		                CALL    OUT_SIO 
+790f cd 10 7b		                CALL    TERM_SIO 
+7912 e1			                POP     HL 
+7913			CMD_EXIT: 
+7913 c9			                RET 
+7914			CMD_ERR_EXIT: 
+7914 d1			                POP     DE 
+7915 c3 df 3b		                JP      ROM_SYNERR 
+7918			; 
+7918			; 
+7918			; 
+7918			PARSER_CMDPARAM: 
+7918 e5			                PUSH    HL 
+7919 21 00 00		                LD      HL,0 
+791c 22 18 f2		                LD      (LOADADRS),HL 
+791f 22 1a f2		                LD      (EXECADRS),HL 
+7922 af			                XOR     A 
+7923 32 1c f2		                LD      (FLGLOADBAS),A 
+7926 e1			                POP     HL 
+7927 7e			                LD      A,(HL) 
+7928 fe 52		                CP      'R' 
+792a c2 65 7a		                JP      NZ,SETCFRET 
+792d 23			                INC     HL 
+792e 7e			                LD      A,(HL) 
+792f fe 43		                CP      'C' 
+7931 c2 65 7a		                JP      NZ,SETCFRET 
+7934 23			                INC     HL 
+7935 7e			                LD      A,(HL) 
+7936 fe 56		                CP      'V' 
+7938 c2 65 7a		                JP      NZ,SETCFRET 
+793b cd eb 79		                CALL    PARSER_SKIP 
+793e 11 55 79		                LD      DE,PARSER_CMDPARAM_010 
+7941 d5			                PUSH    DE 
+7942 fe 45		                CP      'E' 
+7944 ca ff 79		                JP      Z,PARSER_CMDPARAM_PE 
+7947 fe 4f		                CP      'O' 
+7949 ca 07 7a		                JP      Z,PARSER_CMDPARAM_PO 
+794c fe 4e		                CP      'N' 
+794e ca 0f 7a		                JP      Z,PARSER_CMDPARAM_PN 
+7951 d1			                POP     DE 
+7952 c3 65 7a		                JP      SETCFRET 
+7955			PARSER_CMDPARAM_010: 
+7955 23			                INC     HL 
+7956 7e			                LD      A,(HL) 
+7957 11 69 79		                LD      DE,PARSER_CMDPARAM_020 
+795a d5			                PUSH    DE 
+795b fe 38		                CP      '8' 
+795d ca 17 7a		                JP      Z,PARSER_CMDPARAM_8BIT 
+7960 fe 37		                CP      '7' 
+7962 ca 26 7a		                JP      Z,PARSER_CMDPARAM_7BIT 
+7965 d1			                POP     DE 
+7966 c3 65 7a		                JP      SETCFRET 
+7969			PARSER_CMDPARAM_020: 
+7969 23			                INC     HL 
+796a 7e			                LD      A,(HL) 
+796b 11 82 79		                LD      DE,PARSER_CMDPARAM_030 
+796e d5			                PUSH    DE 
+796f fe 31		                CP      '1' 
+7971 ca 35 7a		                JP      Z,PARSER_CMDPARAM_SBIT1 
+7974 fe 32		                CP      '2' 
+7976 ca 3e 7a		                JP      Z,PARSER_CMDPARAM_SBIT1_5 
+7979 fe 33		                CP      '3' 
+797b ca 47 7a		                JP      Z,PARSER_CMDPARAM_SBIT2 
+797e d1			                POP     DE 
+797f c3 65 7a		                JP      SETCFRET 
+7982			PARSER_CMDPARAM_030: 
+7982 23			                INC     HL 
+7983 7e			                LD      A,(HL) 
+7984 11 96 79		                LD      DE,PARSER_CMDPARAM_040 
+7987 d5			                PUSH    DE 
+7988 fe 30		                CP      '0' 
+798a ca 50 7a		                JP      Z,PARSER_CMDPARAM_BRATEFAC64 
+798d fe 31		                CP      '1' 
+798f ca 59 7a		                JP      Z,PARSER_CMDPARAM_BRATEFAC16 
+7992 d1			                POP     DE 
+7993 c3 65 7a		                JP      SETCFRET 
+7996			PARSER_CMDPARAM_040: 
+7996 cd eb 79		                CALL    PARSER_SKIP 
+7999 fe 0c		                CP      0CH             ; ID CODE "&H" 
+799b ca c1 79		                JP      Z,PARSER_CMDPARAM_LOADADRS 
+799e fe 42		                CP      'B' 
+79a0 c2 65 7a		                JP      NZ,SETCFRET 
+79a3 23			                INC     HL 
+79a4 7e			                LD      A,(HL) 
+79a5 fe 41		                CP      'A' 
+79a7 c2 65 7a		                JP      NZ,SETCFRET 
+79aa 23			                INC     HL 
+79ab 7e			                LD      A,(HL) 
+79ac fe 53		                CP      'S' 
+79ae c2 65 7a		                JP      NZ,SETCFRET 
+79b1 23			                INC     HL 
+79b2 3e 01		                LD      A,1 
+79b4 32 1c f2		                LD      (FLGLOADBAS),A 
+79b7 ed 5b 54 eb	                LD      DE,(BASAREA_TOP) 
+79bb ed 53 18 f2	                LD      (LOADADRS),DE 
+79bf 18 24		                JR      PARSER_CMDPARAM_EXIT 
+79c1			PARSER_CMDPARAM_LOADADRS: 
+79c1 23			                INC     HL 
+79c2 5e			                LD      E,(HL) 
+79c3 23			                INC     HL 
+79c4 56			                LD      D,(HL) 
+79c5 23			                INC     HL 
+79c6 ed 53 18 f2	                LD      (LOADADRS),DE 
+79ca 7e			                LD      A,(HL) 
+79cb fe 00		                CP      0 
+79cd 28 16		                JR      Z,PARSER_CMDPARAM_EXIT 
+79cf fe 3a		                CP      ':' 
+79d1 28 12		                JR      Z,PARSER_CMDPARAM_EXIT 
+79d3 2b			                DEC     HL 
+79d4 cd eb 79		                CALL    PARSER_SKIP 
+79d7 fe 0c		                CP      0CH             ; ID CODE "&H" 
+79d9 c2 65 7a		                JP      NZ,SETCFRET 
+79dc			PARSER_CMDPARAM_EXECADRS: 
+79dc 23			                INC     HL 
+79dd 5e			                LD      E,(HL) 
+79de 23			                INC     HL 
+79df 56			                LD      D,(HL) 
+79e0 23			                INC     HL 
+79e1 ed 53 1a f2	                LD      (EXECADRS),DE 
+79e5			PARSER_CMDPARAM_EXIT: 
+79e5 ed 5b 18 f2	                LD      DE,(LOADADRS) 
+79e9 18 77		                JR      CLRCFRET 
+79eb			PARSER_SKIP: 
+79eb 23			                INC     HL 
+79ec 7e			                LD      A,(HL) 
+79ed fe 20		                CP      ' ' 
+79ef 28 fa		                JR      Z,PARSER_SKIP 
+79f1 fe 2c		                CP      ',' 
+79f3 28 03		                JR      Z,PARSER_SKIP_010 
+79f5 d1			                POP     DE 
+79f6 18 6d		                JR      SETCFRET 
+79f8			PARSER_SKIP_010: 
+79f8 23			                INC     HL 
+79f9 7e			                LD      A,(HL) 
+79fa fe 20		                CP      ' ' 
+79fc 28 fa		                JR      Z,PARSER_SKIP_010 
+79fe c9			                RET 
+79ff			PARSER_CMDPARAM_PE: 
+79ff 06 01		                LD      B,1 
+7a01 3e 30		                LD      A,00110000B 
+7a03 32 16 f2		                LD      (MODEWORD),A 
+7a06 c9			                RET 
+7a07			PARSER_CMDPARAM_PO: 
+7a07 06 01		                LD      B,1 
+7a09 3e 10		                LD      A,00010000B 
+7a0b 32 16 f2		                LD      (MODEWORD),A 
+7a0e c9			                RET 
+7a0f			PARSER_CMDPARAM_PN: 
+7a0f 06 00		                LD      B,0 
+7a11 3e 00		                LD      A,00000000B 
+7a13 32 16 f2		                LD      (MODEWORD),A 
+7a16 c9			                RET 
+7a17			PARSER_CMDPARAM_8BIT: 
+7a17 78			                LD      A,B 
+7a18 fe 01		                CP      1 
+7a1a ca 65 7a		                JP      Z,SETCFRET 
+7a1d 3a 16 f2		                LD      A,(MODEWORD) 
+7a20 f6 0c		                OR      00001100B 
+7a22 32 16 f2		                LD      (MODEWORD),A 
+7a25 c9			                RET 
+7a26			PARSER_CMDPARAM_7BIT: 
+7a26 78			                LD      A,B 
+7a27 fe 00		                CP      0 
+7a29 ca 65 7a		                JP      Z,SETCFRET 
+7a2c 3a 16 f2		                LD      A,(MODEWORD) 
+7a2f f6 08		                OR      00001000B 
+7a31 32 16 f2		                LD      (MODEWORD),A 
+7a34 c9			                RET 
+7a35			PARSER_CMDPARAM_SBIT1: 
+7a35 3a 16 f2		                LD      A,(MODEWORD) 
+7a38 f6 40		                OR      01000000B 
+7a3a 32 16 f2		                LD      (MODEWORD),A 
+7a3d c9			                RET 
+7a3e			PARSER_CMDPARAM_SBIT1_5: 
+7a3e 3a 16 f2		                LD      A,(MODEWORD) 
+7a41 f6 80		                OR      10000000B 
+7a43 32 16 f2		                LD      (MODEWORD),A 
+7a46 c9			                RET 
+7a47			PARSER_CMDPARAM_SBIT2: 
+7a47 3a 16 f2		                LD      A,(MODEWORD) 
+7a4a f6 c0		                OR      11000000B 
+7a4c 32 16 f2		                LD      (MODEWORD),A 
+7a4f c9			                RET 
+7a50			PARSER_CMDPARAM_BRATEFAC64: 
+7a50 3a 16 f2		                LD      A,(MODEWORD) 
+7a53 f6 03		                OR      00000011B 
+7a55 32 16 f2		                LD      (MODEWORD),A 
+7a58 c9			                RET 
+7a59			PARSER_CMDPARAM_BRATEFAC16: 
+7a59 3a 16 f2		                LD      A,(MODEWORD) 
+7a5c f6 02		                OR      00000010B 
+7a5e 32 16 f2		                LD      (MODEWORD),A 
+7a61 c9			                RET 
+7a62			CLRCFRET: 
+7a62 37			                SCF 
+7a63 3f			                CCF 
+7a64 c9			                RET 
+7a65			SETCFRET: 
+7a65 37			                SCF 
+7a66 c9			                RET 
+7a67			; 
+7a67			; 
+7a67			; 
+7a67			CLR_RCVBUF: 
+7a67 21 2f f2		                LD      HL,RCVBUF_TOP 
+7a6a f5			                PUSH    AF 
+7a6b e5			                PUSH    HL 
+7a6c 06 84		                LD      B,RCVBUF_BOTTOM - RCVBUF_TOP + 1 
+7a6e af			                XOR     A 
+7a6f			CLR_RCVBUF_L010: 
+7a6f 77			                LD      (HL),A 
+7a70 23			                INC     HL 
+7a71 10 fc		                DJNZ    CLR_RCVBUF_L010 
+7a73 e1			                POP     HL 
+7a74 f1			                POP     AF 
+7a75 c9			                RET 
+7a76			; 
+7a76			; 
+7a76			; 
+7a76			CHK_MEMOVER: 
+7a76 01 80 00		                LD      BC,128 
+7a79 d5			                PUSH    DE 
+7a7a 21 00 78		                LD      HL,_PROG_TOP 
+7a7d 11 00 80		                LD      DE,PC8001RAM_TOP 
+7a80 cd d3 5e		                CALL    ROM_CMPHLDE     ;         Z CY 
+7a83			                                        ; HL<DE : 0  1 
+7a83			                                        ; HL=DE : 1  0 
+7a83			                                        ; HL>DE : 0  0 
+7a83 d1			                POP     DE 
+7a84 38 0c		                JR      C,CHK_MEMOVER_010 
+7a86 d5			                PUSH    DE 
+7a87 eb			                EX      DE,HL 
+7a88 09			                ADD     HL,BC 
+7a89 eb			                EX      DE,HL 
+7a8a 21 00 78		                LD      HL,_PROG_TOP 
+7a8d cd d3 5e		                CALL    ROM_CMPHLDE     ;         Z CY 
+7a90			                                        ; HL<DE : 0  1 
+7a90			                                        ; HL=DE : 1  0 
+7a90			                                        ; HL>DE : 0  0 
+7a90 d1			                POP     DE 
+7a91 d8			                RET     C 
+7a92			CHK_MEMOVER_010: 
+7a92 d5			                PUSH    DE 
+7a93 eb			                EX      DE,HL 
+7a94 09			                ADD     HL,BC 
+7a95 eb			                EX      DE,HL 
+7a96 21 00 ea		                LD      HL,ROMBAS_WORKTOP 
+7a99 cd d3 5e		                CALL    ROM_CMPHLDE     ;         Z CY 
+7a9c			                                        ; HL<DE : 0  1 
+7a9c			                                        ; HL=DE : 1  0 
+7a9c			                                        ; HL>DE : 0  0 
+7a9c d1			                POP     DE 
+7a9d c9			                RET 
+7a9e			; 
+7a9e			; 
+7a9e			; 
+7a9e			CHKDATA: 
+7a9e 21 2f f2		                LD      HL,RCVBUF_TOP 
+7aa1 7e			                LD      A,(HL) 
+7aa2 fe 01		                CP      SOH 
+7aa4 20 bf		                JR      NZ,SETCFRET 
+7aa6 4f			                LD      C,A 
+7aa7 23			                INC     HL 
+7aa8 3a 1e f2		                LD      A,(CHKBLKNO) 
+7aab be			                CP      (HL) 
+7aac 20 b7		                JR      NZ,SETCFRET 
+7aae 81			                ADD     A,C 
+7aaf 4f			                LD      C,A 
+7ab0 23			                INC     HL 
+7ab1 3a 1e f2		                LD      A,(CHKBLKNO) 
+7ab4 2f			                CPL 
+7ab5 be			                CP      (HL) 
+7ab6 20 ad		                JR      NZ,SETCFRET 
+7ab8 81			                ADD     A,C 
+7ab9 4f			                LD      C,A 
+7aba 23			                INC     HL 
+7abb 06 80		                LD      B,128 
+7abd			CHKDATA_L010: 
+7abd 7e			                LD      A,(HL) 
+7abe 81			                ADD     A,C 
+7abf 4f			                LD      C,A 
+7ac0 23			                INC     HL 
+7ac1 10 fa		                DJNZ    CHKDATA_L010 
+7ac3 79			                LD      A,C 
+7ac4 be			                CP      (HL) 
+7ac5 c2 65 7a		                JP      NZ,SETCFRET 
+7ac8 c3 62 7a		                JP      CLRCFRET 
+7acb			; 
+7acb			; 
+7acb			; 
+7acb			DISP_PROGRESS: 
+7acb d5			                PUSH    DE 
+7acc e5			                PUSH    HL 
+7acd 3e 01		                LD      A,1 
+7acf 32 64 ea		                LD      (CURSOR_XPOS),A 
+7ad2 3e 5b		                LD      A,'[' 
+7ad4 cd 57 02		                CALL    ROM_DSPCHR 
+7ad7 2a 18 f2		                LD      HL,(LOADADRS) 
+7ada cd c0 5e		                CALL    ROM_DSPHEX4 
+7add 3e 2d		                LD      A,'-' 
+7adf cd 57 02		                CALL    ROM_DSPCHR 
+7ae2 eb			                EX      DE,HL 
+7ae3 2b			                DEC     HL 
+7ae4 cd c0 5e		                CALL    ROM_DSPHEX4 
+7ae7 3e 5d		                LD      A,']' 
+7ae9 cd 57 02		                CALL    ROM_DSPCHR 
+7aec e1			                POP     HL 
+7aed d1			                POP     DE 
+7aee c9			                RET 
+7aef			; 
+7aef			; 
+7aef			; 
+7aef			INIT_SIO: 
+7aef af			                XOR     A               ; DUMMY OUT 
+7af0 d3 21		                OUT     (USARTCW),A 
+7af2 d3 21		                OUT     (USARTCW),A 
+7af4 d3 21		                OUT     (USARTCW),A 
+7af6 3e 40		                LD      A,01000000B     ; SOFT RESET 
+7af8 d3 21		                OUT     (USARTCW),A 
+7afa 3a 16 f2		                LD      A,(MODEWORD)    ; MODE SETUP 
+7afd d3 21		                OUT     (USARTCW),A 
+7aff 3e 15		                LD      A,00010101B     ; COMMAND SETUP  TRANSMIT ENABLE 
+7b01			                                        ;                DATA TERMINAL READY : FALSE 
+7b01			                                        ;                RECEIVE ENABLE 
+7b01			                                        ;                ERROR RESET 
+7b01			                                        ;                REQUEST TO SEND : FALSE 
+7b01 d3 21		                OUT     (USARTCW),A 
+7b03 32 17 f2		                LD      (CTLWORD),A 
+7b06 cd 2e 7b		                CALL    ENABLE_SIO 
+7b09 cd 46 7b		                CALL    ENABLE_DTR 
+7b0c cd 56 7b		                CALL    ENABLE_RTS 
+7b0f c9			                RET 
+7b10			; 
+7b10			; 
+7b10			; 
+7b10			TERM_SIO: 
+7b10 d5			                PUSH    DE 
+7b11 cd 02 16		                CALL    ROM_TIMEREAD 
+7b14 3a 76 ea		                LD      A,(BCD_TIME_SEC) 
+7b17 57			                LD      D,A 
+7b18			TERM_SIO_010: 
+7b18 d5			                PUSH    DE 
+7b19 cd 02 16		                CALL    ROM_TIMEREAD 
+7b1c d1			                POP     DE 
+7b1d 3a 76 ea		                LD      A,(BCD_TIME_SEC) 
+7b20 ba			                CP      D 
+7b21 28 f5		                JR      Z,TERM_SIO_010 
+7b23 cd 5e 7b		                CALL    DISABLE_RTS 
+7b26 cd 4e 7b		                CALL    DISABLE_DTR 
+7b29 cd 3b 7b		                CALL    DISABLE_SIO 
+7b2c d1			                POP     DE 
+7b2d c9			                RET 
+7b2e			; 
+7b2e			; 
+7b2e			; 
+7b2e			ENABLE_SIO: 
+7b2e 3a 66 ea		                LD      A,(CTL1_OUTDATA) 
+7b31 e6 cf		                AND     11001111B       ; BS2,BS1 CLR 
+7b33 f6 20		                OR      00100000B       ; BS2 ON 
+7b35 d3 30		                OUT     (CONTROL1),A 
+7b37 32 66 ea		                LD      (CTL1_OUTDATA),A 
+7b3a c9			                RET 
+7b3b			; 
+7b3b			; 
+7b3b			; 
+7b3b			DISABLE_SIO: 
+7b3b 3a 66 ea		                LD      A,(CTL1_OUTDATA) 
+7b3e e6 cf		                AND     11001111B       ; BS2,BS1 CLR 
+7b40 d3 30		                OUT     (CONTROL1),A 
+7b42 32 66 ea		                LD      (CTL1_OUTDATA),A 
+7b45 c9			                RET 
+7b46			; 
+7b46			; 
+7b46			; 
+7b46			ENABLE_DTR: 
+7b46 3a 17 f2		                LD      A,(CTLWORD) 
+7b49 f6 02		                OR      00000010B       ; DATA TERMINAL READY : TRUE 
+7b4b d3 21		                OUT     (USARTCW),A 
+7b4d c9			                RET 
+7b4e			; 
+7b4e			; 
+7b4e			; 
+7b4e			DISABLE_DTR: 
+7b4e 3a 17 f2		                LD      A,(CTLWORD) 
+7b51 e6 fd		                AND     11111101B       ; DATA TERMINAL READY : FALSE 
+7b53 d3 21		                OUT     (USARTCW),A 
+7b55 c9			                RET 
+7b56			; 
+7b56			; 
+7b56			; 
+7b56			ENABLE_RTS: 
+7b56 3a 17 f2		                LD      A,(CTLWORD) 
+7b59 f6 20		                OR      00100000B       ; REQUEST TO SEND : TRUE 
+7b5b d3 21		                OUT     (USARTCW),A 
+7b5d c9			                RET 
+7b5e			; 
+7b5e			; 
+7b5e			; 
+7b5e			DISABLE_RTS: 
+7b5e 3a 17 f2		                LD      A,(CTLWORD) 
+7b61 e6 df		                AND     11011111B       ; REQUEST TO SEND : FALSE 
+7b63 d3 21		                OUT     (USARTCW),A 
+7b65 c9			                RET 
+7b66			; 
+7b66			; 
+7b66			; 
+7b66			IN_SIO: 
+7b66 af			                XOR     A 
+7b67 32 1d f2		                LD      (TIMEUP),A 
+7b6a c5			                PUSH    BC 
+7b6b e5			                PUSH    HL 
+7b6c 21 03 00		                LD      HL,3            ; 5194msec Timer 
+7b6f 01 00 80		                LD      BC,8000H 
+7b72			IN_SIO_010: 
+7b72 db 09		                IN      A,(KEYBRD9) 
+7b74 e6 01		                AND     00000001B 
+7b76 ca 86 7b		                JP      Z,IN_SIO_030 
+7b79 db 21		                IN      A,(USARTCW) 
+7b7b e6 02		                AND     00000010B 
+7b7d 28 0c		                JR      Z,IN_SIO_040 
+7b7f db 20		                IN      A,(USARTDW) 
+7b81			IN_SIO_020: 
+7b81 e1			                POP     HL 
+7b82 c1			                POP     BC 
+7b83 c3 62 7a		                JP      CLRCFRET 
+7b86			IN_SIO_030: 
+7b86 e1			                POP     HL 
+7b87 c1			                POP     BC 
+7b88 c3 65 7a		                JP      SETCFRET 
+7b8b			IN_SIO_040: 
+7b8b 0b			                DEC     BC 
+7b8c 79			                LD      A,C 
+7b8d fe 00		                CP      0 
+7b8f 20 e1		                JR      NZ,IN_SIO_010 
+7b91 78			                LD      A,B 
+7b92 fe 00		                CP      0 
+7b94 20 dc		                JR      NZ,IN_SIO_010 
+7b96 2b			                DEC     HL 
+7b97 7d			                LD      A,L 
+7b98 fe 00		                CP      0 
+7b9a 20 d6		                JR      NZ,IN_SIO_010 
+7b9c 7c			                LD      A,H 
+7b9d fe 00		                CP      0 
+7b9f 20 d1		                JR      NZ,IN_SIO_010 
+7ba1 3e 01		                LD      A,1 
+7ba3 32 1d f2		                LD      (TIMEUP),A 
+7ba6 3e 00		                LD      A,0 
+7ba8 18 d7		                JR      IN_SIO_020 
+7baa			; 
+7baa			; 
+7baa			; 
+7baa			OUT_SIO: 
+7baa f5			                PUSH    AF 
+7bab			OUT_SIO1: 
+7bab db 09		                IN      A,(KEYBRD9) 
+7bad e6 01		                AND     00000001B 
+7baf ca be 7b		                JP      Z,OUT_SIO2 
+7bb2 db 21		                IN      A,(USARTCW) 
+7bb4 e6 01		                AND     00000001B 
+7bb6 28 f3		                JR      Z,OUT_SIO1 
+7bb8 f1			                POP     AF 
+7bb9 d3 20		                OUT     (USARTDW),A 
+7bbb c3 62 7a		                JP      CLRCFRET 
+7bbe			OUT_SIO2: 
+7bbe f1			                POP     AF 
+7bbf c3 65 7a		                JP      SETCFRET 
+7bc2			; 
+7bc2 .. 00		ERR_MSG:        DB      "Abort Receive",0 
+7bd0			                ;END 
+7bd0			 
+# End of file cmdrcv.asm
+7bd0			; 
+7bd0			; 
+7bd0			; 
+7bd0			_USER_ROM_END: 
+7bd0 0xff...		                DS      2048 - 4 - ( _USER_ROM_END - _USER_ROM_START ), 0FFH 
+7ffc			; 
+7ffc c3 00 78		                JP      _USER_ROM_START 
+7fff ..			                DB      "U" 
+8000			                END 
+			
+
+# End of file cmdrcv_2krom.asm
+8000
