@@ -23,6 +23,7 @@
  */
 
 // 更新履歴
+// 2022/06/18 v1.0.6 NARYA 2.0 ボードで RX:GPIO34,TX:GPIO26 として Serial2 を用意し SIO モード時は Serial2 を使用するようにした。
 // 2022/06/11 v1.0.5 DMA OFF (I/O ポート 68H へ 0 または I/O ポート 51H へ 0)で画面表示停止忘れ。
 //                   DMA OFF での速度UP忘れ。
 //                   I/O ポート E2 リードでバンク選択状態を返すようにした。
@@ -54,7 +55,7 @@
 
 #define N80FABGL_VERSION_MAJOR      1
 #define N80FABGL_VERSION_MINOR      0
-#define N80FABGL_VERSION_REVISION   5
+#define N80FABGL_VERSION_REVISION   6
 
 #define N80FABGL_VERSION            (  ((int)N80FABGL_VERSION_MAJOR) << 16 \
                                      | ((int)N80FABGL_VERSION_MINOR) << 8 \

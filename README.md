@@ -248,7 +248,7 @@ F11 と SHIFT+F11 で任意のファイルをロード&実行した物がある�
 以下の流れです。ホームディレクトリでパッチを行うと言う事です。Windows なので patch.exe が無い? 探して下さい(笑) もう Micro$oft な時代は終わってるから全部完全移植すればいいのに(草)
 
     $ cd
-    $ patch -p0 < patch1.0.8/Narya.patch
+    $ patch -p0 < patch1.0.9/Narya.patch
 
 src/emu.h 改定
 
@@ -272,39 +272,21 @@ Narya Ver 2.0 ボードの場合
 
 # 13. 問題点
 
-Arduino ESP32 v1.0.6 & FabGL v1.0.8 を利用した場合<br>
+Arduino ESP32 v1.0.6 & FabGL v1.0.9 を利用した場合<br>
 <br>
 微妙に遅い。<br>
 <br>
-Arduino ESP32 v2.0.3 & FabGL v1.0.8 を利用した場合<br>
+Arduino ESP32 v2.0.5 & FabGL v1.0.9 を利用した場合<br>
 <br>
-より微妙に遅い。<br>
-boot 後、画面最上部にファンクションキーのゴミ表示が瞬時でる。<br>
-disk format(uPD765A write id)が MainCpuTask 側でタイムアウト。<br>
-~/Arduino/libraries/FabGL/src/fabutils.cpp の FileBrowser::mountSDCard にて速度制限があった。以下原文<br>
+微妙に遅い。<br>
 <br>
-    1225  // slow down SD card. Using ESP32 core 2.0.0 may crash SD subsystem, having VGA output and WiFi enabled<br>
-    1226  // @TODO: check again<br>
-    1227  host.max_freq_khz = 19000;<br>
-<br>
-    マジか!? 試しに速度制限をコメントアウトして Arduino ESP32 v2.0.3 でビルト&書き込みしてみたら SD subsystem がクラッシュすることは無かった。SD subsystem がクラッシュした事があったから速度制限されたのだと思うので触らぬ神に祟りなしで速度制限有りでしばらく様子見。<br>
-    SD I/O 時間が Arduino ESP32 v2.0.2 より改善されてるが、やっぱり遅いのが原因<br>
-    Arduino ESP32 v1.0.6 で 80 track r/w _DEBUG モードで約 28 秒で OK<br>
-    Arduino ESP32 v2.0.3 で 50 track r/w _DEBUG モードで約 56 秒で NG<br>
-    n-disk basic(20-Sep-1981) format.DS は Disk I/O Error 検出<br>
-    s-dos 1.1 format は異常検知で自動 reboot<br>
-    CP/M 2.2 format.com は OK (55 秒内 80 track 完了判定は実装無し?ｗ)<br>
-<br>
-以下、Arduino ESP32 v1.0.6 & Arduino ESP32 v2.0.3 のどちらでも<br>
+以下、Arduino ESP32 v1.0.6 & Arduino ESP32 v2.0.5 のどちらでも<br>
 <br>
 WIDTH 80,20 表示崩れ<br>
     なして発生するのかわがんね。単体テストはOK。このモードは放置します。<br>
-    Arduino ESP32 v2.0.3 だとだいぶましだけど瞬時崩れが随時見える。<br>
+    Arduino ESP32 v2.0.5 だとだいぶましだけど瞬時崩れが随時見える。<br>
     やっぱ 200LINE をフォント高さ 10 でスキャンライン描画は想定外なのかも知れない。<br>
     WIDTH 40,20 はいけてるのに。かなしすｗ<br>
-<br>
-左ALTキー併用でテンキー(0〜9)GRAPH文字が入力出来ない<br>
-    右ALTキー併用はOK。回避策あるのでいいかとｗ<br>
 <br>
 beep音、seek音が微妙<br>
     実機(PC-8001/PC-8033/PC-80S31)から生録したデータを<br>

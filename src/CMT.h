@@ -59,12 +59,19 @@ public:
         cmt_read( result );
       else
       {
+#ifdef NARYA_2_0
+        if ( Serial2.available() )
+          *result = Serial2.read();
+        else
+#endif // NARYA_2_0
 #ifndef _DEBUG
+  #ifndef NARYA_2_0
         if ( Serial.available() )
           *result = Serial.read();
         else
+  #endif // !NARYA_2_0
 #endif // !_DEBUG
-          *result = 0x00;
+        *result = 0x00;
       }
       return true;
     }
@@ -75,8 +82,13 @@ public:
       else
       {
         *result = 0x85;
+#ifdef NARYA_2_0
+        *result |= ( Serial2.available() ? 0x02 : 0x00 );
+#endif // NARYA_2_0
 #ifndef _DEBUG
+  #ifndef NARYA_2_0
         *result |= ( Serial.available() ? 0x02 : 0x00 );
+  #endif // !NARYA_2_0
 #endif // !_DEBUG
       }
       return true;
@@ -90,9 +102,15 @@ public:
     {
       if ( m_cmtMode )
         cmt_write( value );
+#ifdef NARYA_2_0
+      else
+        Serial2.write( value );
+#endif // NARYA_2_0
 #ifndef _DEBUG
+  #ifndef NARYA_2_0
       else
         Serial.write( value );
+  #endif // ! NARYA_2_0
 #endif // !_DEBUG
       return true;
     }

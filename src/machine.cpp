@@ -794,7 +794,8 @@ void Machine::writeIO( void * context, int address, int value )
       break;
     case 0x30:
       m->m_CMT.writeIO( address, value );
-      // non break
+      m->m_CRT.writeIO( address, value );
+      break;
     case 0x50:
     case 0x51:
     case 0x60:
@@ -873,7 +874,8 @@ void Machine::writeIO( void * context, int address, int value )
       break;
     case 0xFD:
       _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] DISK\r\n", __func__, __LINE__, address, value, pc );
-      // non break
+      m->m_DISK.pcWriteIO( address, value, pc );
+      break;
     case 0xFE:
     case 0xFF:
       m->m_DISK.pcWriteIO( address, value, pc );
@@ -982,7 +984,7 @@ void Machine::vkf9( void * context, int value )
     {
       char ext[16];
       memset( ext, 0, sizeof( ext ) );
-      strncpy( ext, p, sizeof( ext ) );
+      strncpy( ext, p, sizeof( ext ) - 1 );
       if ( strcasecmp( ext, CMT_FILE_EXTENSION ) == 0 )
         m->m_cmtLoad = m->cmtLoad( m->m_menu2FileName );
       if ( strcasecmp( ext, N80_FILE_EXTENSION ) == 0 )
@@ -1027,16 +1029,16 @@ void Machine::vkf11( void * context, int value )
   // (2) yyy.cmt (BASIC) と  monyyy.cmt (マシン語) の場合
   // c:\t88tool -n -f "yyy.n80" "yyy.bas" "monyyy.cmt"
   //
-  //if ( !value )
-  //{
-  //  // VK_F11 押下
-  //  m->m_n80Load = m->n80Load( "Bug Fire.n80" );
-  //}
-  //else
-  //{
-  //  // SHIFT + VK_F11 押下
-  //  m->m_n80Load = m->n80Load( "Scramble.n80" );
-  //}
+  if ( !value )
+  {
+    // VK_F11 押下
+    m->m_n80Load = m->n80Load( "Bug Fire.n80" );
+  }
+  else
+  {
+    // SHIFT + VK_F11 押下
+    m->m_n80Load = m->n80Load( "Scramble.n80" );
+  }
   if ( m->m_n80Load )
     m->setRequestCpuCmd( cmdSetPCSP, m->m_requestPC, m->m_requestSP, 0 );
   m->setRequestCpuCmd( cmdContinue );

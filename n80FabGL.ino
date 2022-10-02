@@ -3,8 +3,8 @@
   Copyright (c) 2022 tan
   All rights reserved.
 
-  Arduino IDE board : Arduino ESP32 v1.0.6 or v2.0.3
-  library           : FabGL v1.0.8
+  Arduino IDE board : Arduino ESP32 v1.0.6 or v2.0.5
+  library           : FabGL v1.0.9
   target            : ESP32 DEV Module(ESP32-Wrover)
   flash size        : 4MB(32Mb)
   partition scheme  : Huge APP (3MB No OTA/1MB SPIFFS)
@@ -32,40 +32,18 @@
 // 問題点
 //
 // 1. 全般
-//    Arduino ESP32 v1.0.6 & FabGL v1.0.8
+//    Arduino ESP32 v2.0.5 & FabGL v1.0.9
 //      微妙に遅い
-//    Arduino ESP32 v2.0.3 & FabGL v1.0.8
-//      微妙に遅い+
-//      boot 後、画面最上部にファンクションキーのゴミ表示が瞬時でる
-//      disk format(uPD765A write id)が MainCpuTask 側でタイムアウト
-//        ~/Arduino/libraries/FabGL/src/fabutils.cpp の FileBrowser::mountSDCard にて速度制限があった。以下原文
-//        
-//  1225  // slow down SD card. Using ESP32 core 2.0.0 may crash SD subsystem, having VGA output and WiFi enabled
-//  1226  // @TODO: check again
-//  1227  host.max_freq_khz = 19000;
-//
-//        マジか!? 試しに速度制限をコメントアウトして Arduino ESP32 v2.0.3 でビルト&書き込みしてみたら SD subsystem がクラッシュ
-//        することは無かった。SD subsystem がクラッシュした事があったから速度制限されたのだと思うので触らぬ神に祟りなしで速度制限有りで
-//        しばらく様子見。
-//        SD I/O 時間が v2.0.2 より改善されてるが、やっぱり遅いのが原因
-//        v1.0.6 で 80 track r/w _DEBUG モードで約 28 秒で OK
-//        v2.0.3 で 50 track r/w _DEBUG モードで約 56 秒で NG
-//        n-disk basic(20-Sep-1981) format.DS は Disk I/O Error 検出
-//        s-dos 1.1 format は異常検知で自動 reboot
-//        CP/M 2.2 format.com は OK (55 秒内 80 track 完了判定は実装無し?ｗ)
-//    Arduino ESP32 で v1.0.6 or v2.0.3 どちらを選ぶかは好みで。
-//    FabGL v1.0.7 より内蔵 DAC 出力はレジスタ制御方式に移行されてるので SDK ver 依存無し。
+//    Arduino ESP32 v1.0.6 & FabGL v1.0.9
+//      微妙に遅い
 //
 // 2. WIDTH 80,20 表示崩れ
 //    なして発生するのかわがんね。単体テストはOK。このモードは放置。
-//    Arduino ESP32 v2.0.3 だとだいぶましだけど瞬時崩れが随時見える。
+//    Arduino ESP32 v2.0.5 だとだいぶましだけど瞬時崩れが随時見える。
 //    やっぱ 200LINE をフォント高さ 10 でスキャンライン描画は想定外なのかも知れない。
 //    WIDTH 40,20 はいけてるのに。かなしすｗ
 //
-// 3. 左ALTキー併用でテンキー(0〜9)GRAPH文字が入力出来ない
-//    右ALTキー併用はOK。回避策あるのでいいかとｗ
-//
-// 4. beep音、seek音が微妙
+// 3. beep音、seek音が微妙
 //    実機(PC-8001/PC-8033/PC-80S31)から生録したデータを
 //    FabGL準拠のサンプリングレート16kHz/mono/8bitデータ化で
 //    再生してるけど元がヘタれてる?(ｗ) やっぱコンデンサ全交換要かｗ
@@ -145,8 +123,11 @@ void n80FabglMenu( void )
   drvItem[len-1] = 0;
   ibox.begin( VGA_640x480_60Hz, 500, 400, 4 );
   ibox.setBackgroundColor( RGB888( 0, 0, 0 ) );
-  char menuTitle[64];
-  sprintf( menuTitle, "menu %s", m->getVersionString() );
+  char verData[256];
+  char menuTitle[512];
+  memset( verData, 0, sizeof( verData ) );
+  strncpy( verData, m->getVersionString(), sizeof( verData ) - 1 );
+  sprintf( menuTitle, "menu %s", verData );
   int selCmd = ibox.menu( menuTitle, "Select a command", menuItem );
   int drv;
 
@@ -224,6 +205,12 @@ void setup()
 {
   Serial.begin( 115200 );
   while ( !Serial && !Serial.available() );
+#ifdef NARYA_2_0
+  // RXD(RD) : GPIO34
+  // TXD(SD) : GPIO26
+  Serial2.begin( 4800, SERIAL_8N1, 34, 26 );
+  while ( !Serial2 && !Serial2.available() );
+#endif
 
   disableCore0WDT();
   // experienced crashes without this delay!
