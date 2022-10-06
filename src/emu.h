@@ -41,6 +41,7 @@
 //#define _DEBUG
 //#define _UPD765A_DEBUG
 //#define _KEYBRD_LAYOUT_ALLCHECK
+//#define _ENABLE_USERROMAREA_RAM
 
 #define SD_MOUNT_PATH           "/SD"
 #define PC8001ROM               "/PC8001/PC-8001.ROM"

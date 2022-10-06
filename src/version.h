@@ -23,6 +23,13 @@
  */
 
 // 更新履歴
+// 2022/10/02 v1.0.7 以下の操作で mon W にてmicroSDにファイルが書き出されない動作不良改修(確認不足)
+//                     mon
+//                     *L
+//                     編集等
+//                     *Waaaa,bbbb
+//                   src/emu.h _ENABLE_USERROMAREA_RAM マクロ定義を追加(ユーザーROM領域 6000H 〜 7FFFH を RAM として使用したいと言う旧友の意見ｗ) 
+//                   例の EB55H 60H set,6020 00H set,new,?fre(0) も同様に機能する
 // 2022/06/18 v1.0.6 NARYA 2.0 ボードで RX:GPIO34,TX:GPIO26 として Serial2 を用意し SIO モード時は Serial2 を使用するようにした。
 // 2022/06/11 v1.0.5 DMA OFF (I/O ポート 68H へ 0 または I/O ポート 51H へ 0)で画面表示停止忘れ。
 //                   DMA OFF での速度UP忘れ。
@@ -55,7 +62,7 @@
 
 #define N80FABGL_VERSION_MAJOR      1
 #define N80FABGL_VERSION_MINOR      0
-#define N80FABGL_VERSION_REVISION   6
+#define N80FABGL_VERSION_REVISION   7
 
 #define N80FABGL_VERSION            (  ((int)N80FABGL_VERSION_MAJOR) << 16 \
                                      | ((int)N80FABGL_VERSION_MINOR) << 8 \

@@ -683,7 +683,16 @@ void Machine::writeByte( void * context, int address, int value )
   if ( address >= 0 && address < 32768 )
   {
     if ( m->m_portE2writeData & 0x10 )
+    {
       m->m_RAMExt[address] = value;
+    }
+#ifdef _ENABLE_USERROMAREA_RAM
+    else
+    {
+      if ( address >= 0x6000 && address <= 0x7FFF )
+        m->m_RAM[address] = value;
+    }
+#endif // _ENABLE_USERROMAREA_RAM
   }
   else
     m->m_RAM[address] = value;

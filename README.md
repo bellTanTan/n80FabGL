@@ -78,8 +78,7 @@ N-BASIC な cmt ファイルとして color.cmt , mono.cmt , mandel.cmt をこ�
 
 # 5. 操作
 
-キーボードの配置はオリジナルの配置に近づけています。元を忘れた方はこちらで[キーボードレイアウト](https://www.pcmini.jp/manual/pc-8001-manual/keyboard-pc-8001/)を確認できます。<br>
-(小生もHAL研PasocomMini PC-8001所有しています。d88ファイル直ロード出来なかったのがとても寂しかったですｗ)
+キーボードの配置はオリジナルの配置に近づけています。元を忘れた方はこちらで[キーボードレイアウト](https://www.pcmini.jp/manual/pc-8001-manual/keyboard-pc-8001/)を確認できます。(小生もHAL研PasocomMini PC-8001所有しています。d88ファイル直ロード出来なかったのがとても寂しかったですｗ)<br>
 
 以下、特記します。
 
@@ -143,7 +142,7 @@ F9 で開くメニューの「Unmount Disk」より fd0,fd1,(fd2,fd3) から排�
 2D タイプ(2head 40track 16sector 256sectorByte = 320KiB(327680byte))の D88 ファイル(348848byte)が対象です。<br>
 D88 ファイルは Read/Write されます。手持ちの D88 マスターファイルの消失には十分に注意して下さい。<br>
 D88 ファイルの「書き込み禁止」ステータス(ファイル先頭より 0 基点で 26 バイト目 10H で書き込み禁止)に対応しています。<br>
-2重ガードも可能にしています。n80FabGL.ino 109 行目 bool writeProtected = false; を bool writeProtected = true; にすることで可能です。<br>
+2重ガードも可能にしています。n80FabGL.ino 87 行目 bool writeProtected = false; を bool writeProtected = true; にすることで可能です。<br>
 
 Disk Unit CPU(通称サブCPU)は core #1 で動作させています。core #1 には他に ISR/other task がいます。優先順位を上げすぎると CPU 時間を食いつぶして動作不能に陥ります。<br>
 タスク調整/クリティカルセクションとしてのミューテックス調整の結果、優先順位 1 としました。Main CPU 側のタスクも優先順位 1 です。<br>
@@ -159,6 +158,7 @@ Disk Unit CPU(通称サブCPU)を常時走らせて core #1 の資源取り合�
 # 8. ユーザーROM
 
 24KiB(24576byte)の本体 ROM を利用出来ている場合に USER.ROM ファイル(最大 8192 byte)を 6000H よりロードします。<br>
+src/emu.h の _ENABLE_USERROMAREA_RAM を有効(先頭 // の2文字を消す)しビルト&書き込みすると 6000H 〜 7FFFH を RAM として利用出来ます。<br>
 本体 ROM プログラムの規定どおり 6000H と 6001H が 41H('A') 42H('B') であるとき本体 ROM プログラムにより 6002H へ制御移行されます。<br>
 I/O ポート E2 (バンク選択)は PC-8011 相当品の機能をエミュレーションしていますので I/O ポート E2 が 0 の場合 6000H 〜 7FFFH が ROM として利用できます。<br>
 本体 ROM プログラムの boot シーケンス(Disk Unit からロードされる IPL 込み)によってはシグネチャ "AB" でも実行から除外されます。<br>
@@ -175,7 +175,7 @@ Arduino IDE のシリアルモニタは「LFのみ」にして h 送信でデバ
 
 各種モニタ、ICE(in-circuit emulator) 等を使った事がある方には「あぁ」なコマンドだと思います。ソフィアシステムズ/SA710 に近づけようとしたけど、そこに労力入れても報われないので必要最低限しか用意していません。この機能で本体 ROM と Disk Unit CPU(通称サブCPU) のエミュレーションデバッグも行いました。
 
-# 9. 拡張した機能
+# 9. n80pi及びオリジナルPC-8001から拡張した機能
 
 NEC PC-8001 としてのカレンダー時計として時計設定可能です。年保持不可と言う事には変わりません。内部的には 1970 年です。<br>
 プリンター出力。LLIST で Arduino IDE のシリアルポートに出てきます。それだけ(笑)<br>
@@ -252,8 +252,8 @@ F11 と SHIFT+F11 で任意のファイルをロード&実行した物がある�
 
 src/emu.h 改定
 
-    33 #define NARYA_2_0
-    34 //#define DONT_CMT_SAVE_INDICATOR
+    32 #define NARYA_2_0
+    33 //#define DONT_CMT_SAVE_INDICATOR
 
 # 12. FabGL v1.0.6 を使いたい
 

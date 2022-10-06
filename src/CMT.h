@@ -167,6 +167,7 @@ private:
     if ( m_reset == true )
     {
       m_reset = false;
+      m_index = 0;
       *result = 0xFF;
       return;
     }
