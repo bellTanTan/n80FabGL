@@ -1,0 +1,80 @@
+--- Arduino/libraries/FabGL/src/emudevs/Z80.h	2022-03-19 07:11:10.000000000 +0900
++++ Arduino/FabGL/n80FabGL/patch/src/emudevs/Z80.h	2022-05-15 14:27:44.192998756 +0900
+@@ -44,8 +44,9 @@
+  * accepted at the instruction right after a DI or EI on an actual processor.
+  */
+ 
+-/*
++
+  #define Z80_CATCH_HALT
++/*
+  #define Z80_CATCH_DI
+  #define Z80_CATCH_EI
+  #define Z80_CATCH_RETI
+@@ -271,12 +272,15 @@
+   uint16_t getPC()                            { return state.pc; }
+   void setPC(uint16_t value)                  { state.pc = value; }
+ 
++  int getStatus()                             { return state.status; }
++  int getIM()                                 { return state.im; }
++  int getIFF1()                               { return state.iff1; }
++  int getIFF2()                               { return state.iff2; }
+ 
+ private:
+ 
+   int intemulate(int opcode, int elapsed_cycles);
+ 
+-
+   Z80_STATE         state;
+ 
+   // callbacks
+--- Arduino/libraries/FabGL/src/emudevs/Z80.cpp	2022-03-19 07:11:10.000000000 +0900
++++ Arduino/FabGL/n80FabGL/patch/src/emudevs/Z80.cpp	2022-05-15 14:27:38.060833173 +0900
+@@ -2838,7 +2838,7 @@
+ 
+   #ifdef Z80_CATCH_HALT
+ 
+-        state.status = Z80_STATUS_FLAG_HALT;
++        state.status = Z80_STATUS_HALT;
+ 
+   #endif
+ 
+@@ -2852,7 +2852,7 @@
+ 
+   #ifdef Z80_CATCH_DI
+ 
+-        state.status = Z80_STATUS_FLAG_DI;
++        state.status = Z80_STATUS_DI;
+ 
+   #endif
+ 
+@@ -2866,7 +2866,7 @@
+ 
+   #ifdef Z80_CATCH_EI
+ 
+-        state.status = Z80_STATUS_FLAG_EI;
++        state.status = Z80_STATUS_EI;
+ 
+   #endif
+ 
+@@ -3797,16 +3797,16 @@
+   #if defined(Z80_CATCH_RETI) && defined(Z80_CATCH_RETN)
+ 
+         state.status = opcode == OPCODE_RETI
+-        ? Z80_STATUS_FLAG_RETI
+-        : Z80_STATUS_FLAG_RETN;
++        ? Z80_STATUS_RETI
++        : Z80_STATUS_RETN;
+ 
+   #elif defined(Z80_CATCH_RETI)
+ 
+-        state.status = Z80_STATUS_FLAG_RETI;
++        state.status = Z80_STATUS_RETI;
+ 
+   #elif defined(Z80_CATCH_RETN)
+ 
+-        state.status = Z80_STATUS_FLAG_RETN;
++        state.status = Z80_STATUS_RETN;
+ 
+   #endif
+ 

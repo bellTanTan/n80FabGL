@@ -1,0 +1,760 @@
+# File cmdrcv_4krom.asm
+0000			                ORG     06000H 
+6000			_USER_ROM_START: 
+6000			_PROG_TOP: 
+6000 ..			                DB      "AB" 
+6002 c3 10 60		                JP      _ENTRY 
+6005			_MON_ENTRY: 
+6005 cd 10 60		                CALL    _ENTRY 
+6008 c3 81 00		                JP      ROM_BASPROMPT 
+600b 00			                NOP 
+600c 00			                NOP 
+600d 01			                DB      VER_MAJOR 
+600e 01			                DB      VER_MINOR 
+600f 00			                DB      VER_REVISION 
+6010			_ENTRY: 
+6010 21 1c 60		                LD      HL,NEWJPTBL 
+6013 11 fc f0		                LD      DE,CMD_ENTRY 
+6016 01 03 00		                LD      BC,3 
+6019 ed b0		                LDIR 
+601b c9			                RET 
+601c			NEWJPTBL: 
+601c c3 1f 60		                JP      NEW_CMD 
+601f			NEW_CMD: 
+601f			                INCLUDE "cmdrcv.asm" 
+601f			; PARITY           : E EVEN 
+601f			;                  : O ODD 
+601f			;                  : N NON 
+601f			; DATA BITS        : 8 8BITS 
+601f			;                  : 7 7BITS 
+601f			; STOP BITS        : 1 1BIT 
+601f			;                  : 2 1.5BITS 
+601f			;                  : 3 2BITS 
+601f			; BAUD RATE FACTOR : 0 64X 
+601f			;                  : 1 16X 
+601f			; ex. E730,O710,N810 
+601f			; ex. E731,O711,N811 
+601f			; 
+601f			; CMD RCV,N811,&HD000[,&HD000] 
+601f			; CMD RCV,N811,BAS 
+601f			; 
+601f			; 
+601f			; CONSTANT CONTROL CODE 
+601f			; 
+601f			SOH:            EQU     01H 
+601f			STX:            EQU     02H 
+601f			EOT:            EQU     04H 
+601f			ACK:            EQU     06H 
+601f			NAK:            EQU     15H 
+601f			CAN:            EQU     18H 
+601f			; 
+601f			; CONSTANT I/O PORT 
+601f			; 
+601f			KEYBRD9:        EQU     09H 
+601f			USARTDW:        EQU     20H 
+601f			USARTCW:        EQU     21H             ; MODE SETUP 
+601f			                                        ; 76543210 
+601f			                                        ; ||||||++--- BAUD RATE FACTOR 
+601f			                                        ; ||||||      00 : SYNC MODE 
+601f			                                        ; ||||||      01 : 1X 
+601f			                                        ; ||||||      10 : 16X 
+601f			                                        ; ||||||      11 : 64X 
+601f			                                        ; ||||++----- CHARACTER LENGTH 
+601f			                                        ; ||||        00 : 5BITS 
+601f			                                        ; ||||        01 : 6BITS 
+601f			                                        ; ||||        10 : 7BITS 
+601f			                                        ; ||||        11 : 8BITS 
+601f			                                        ; |||+------- PARITY ENABLE 
+601f			                                        ; |||         1 : ENABLE 
+601f			                                        ; |||         0 : DISABLE 
+601f			                                        ; ||+-------- EVEN PARITY GENARATION/CHECK 
+601f			                                        ; ||          1 : EVEN 
+601f			                                        ; ||          0 : ODD 
+601f			                                        ; ++--------- NUMBER OF STOP BITS 
+601f			                                        ;             00 : INVALID 
+601f			                                        ;             01 : 1 BIT 
+601f			                                        ;             10 : 1.5 BITS 
+601f			                                        ;             11 : 2 BITS 
+601f			                                        ; 
+601f			                                        ; COMMAND SETUP 
+601f			                                        ; 76543210 
+601f			                                        ; |||||||+--- TRANSMIT ENABLE 
+601f			                                        ; |||||||     1 : ENABLE 
+601f			                                        ; |||||||     0 : DISABLE 
+601f			                                        ; ||||||+---- DATA TERMINAL READY 
+601f			                                        ; ||||||      "high" will force ~DTR output zero 
+601f			                                        ; |||||+----- RECEIVE ENABLE 
+601f			                                        ; |||||       1 : ENABLE 
+601f			                                        ; |||||       0 : DISABLE 
+601f			                                        ; ||||+------ SEND BREAK CHARACTER 
+601f			                                        ; ||||        1 : forces TxD "low" 
+601f			                                        ; ||||        0 : normal operation 
+601f			                                        ; |||+------- ERROR RESET 
+601f			                                        ; |||         1 : reset all error flags PE,OE,FE 
+601f			                                        ; ||+-------- REQUEST TO SEND 
+601f			                                        ; ||          "high" will force ~RTS output zero 
+601f			                                        ; |+--------- INTERNAL RESET 
+601f			                                        ; |           "high" returns USART to Mode Instruction Format 
+601f			                                        ; +---------- ENTER HUNT MODE 
+601f			                                        ;             1 = enable search for Sync Characters 
+601f			CONTROL1:       EQU     30H 
+601f			; 
+601f			; CONSTANT ROM BASIC ROUTINE 
+601f			; 
+601f			ROM_BASPROMPT:  EQU     0081H 
+601f			ROM_DSPCHR:     EQU     0257H 
+601f			ROM_BEEP:       EQU     0D43H 
+601f			ROM_TIMEREAD:   EQU     1602H 
+601f			ROM_SYNERR:     EQU     3BDFH 
+601f			ROM_MSGOUT:     EQU     52EDH 
+601f			ROM_MON_UNEXT:  EQU     5C35H 
+601f			ROM_DSPHEX4:    EQU     5EC0H 
+601f			ROM_CMPHLDE:    EQU     5ED3H 
+601f			ROM_DSPCRLF:    EQU     5FCAH 
+601f			; 
+601f			; CONSTANT ROM BASIC WORD AREA 
+601f			; 
+601f			PC8001RAM_TOP:  EQU     8000H 
+601f			ROMBAS_WORKTOP: EQU     0EA00H 
+601f			CURSOR_YPOS:    EQU     0EA63H 
+601f			CURSOR_XPOS:    EQU     0EA64H 
+601f			CTL1_OUTDATA:   EQU     0EA66H 
+601f			BCD_TIME_SEC:   EQU     0EA76H 
+601f			OUTPUT_DEVICE:  EQU     0EB49H 
+601f			BASAREA_TOP:    EQU     0EB54H 
+601f			VARAREA_TOP:    EQU     0EFA0H 
+601f			ARRAYAREA_TOP:  EQU     0EFA2H 
+601f			FREEAREA_TOP:   EQU     0EFA4H 
+601f			CMD_ENTRY:      EQU     0F0FCH 
+601f			; 
+601f			; N-BASIC ROM FREE AREA1 : F216~F2FF 
+601f			; N-BASIC ROM FREE AREA2 : FF3D~FFFF 
+601f			; CONSTANT "CMD RCV" WORK AREA 
+601f			; 
+601f			MODEWORD:       EQU     0F216H 
+601f			CTLWORD:        EQU     0F217H 
+601f			LOADADRS:       EQU     0F218H 
+601f			EXECADRS:       EQU     0F21AH 
+601f			FLGLOADBAS:     EQU     0F21CH 
+601f			TIMEUP:         EQU     0F21DH 
+601f			CHKBLKNO:       EQU     0F21EH 
+601f			RCVBUF_TOP:     EQU     0F22FH 
+601f			RCVBUF_HEADER:  EQU     RCVBUF_TOP 
+601f			RCVBUF_BLKNO:   EQU     RCVBUF_TOP +1 
+601f			RCVBUF_CBLKNO:  EQU     RCVBUF_TOP +2 
+601f			RCVBUF_DATA:    EQU     RCVBUF_TOP +3 
+601f			RCVBUF_CHKSUM:  EQU     RCVBUF_DATA +128 
+601f			RCVBUF_BOTTOM:  EQU     RCVBUF_CHKSUM 
+601f			; 
+601f			; CONSTANT "CMD RCV" VERSION DATA 
+601f			; 
+601f			VER_MAJOR:      EQU     1 
+601f			VER_MINOR:      EQU     1 
+601f			VER_REVISION:   EQU     0 
+601f			; 
+601f			                ;ORG    0H 
+601f			CMD_START: 
+601f cd 12 61		                CALL    PARSER_CMDPARAM 
+6022 da 0e 61		                JP      C,CMD_ERR_EXIT 
+6025			 
+6025 e5			                PUSH    HL 
+6026 cd e9 62		                CALL    INIT_SIO 
+6029 3e 01		                LD      A,1 
+602b 32 1e f2		                LD      (CHKBLKNO),A 
+602e			CMD_L010: 
+602e 3e 15		                LD      A,NAK 
+6030 cd a4 63		                CALL    OUT_SIO 
+6033 da 04 61		                JP      C,CMD_CANCEL 
+6036			CMD_L020: 
+6036 cd 60 63		                CALL    IN_SIO 
+6039 da 04 61		                JP      C,CMD_CANCEL 
+603c fe 04		                CP      EOT 
+603e 28 73		                JR      Z,CMD_030 
+6040 fe 01		                CP      SOH 
+6042 28 21		                JR      Z,CMD_010 
+6044 3a 1d f2		                LD      A,(TIMEUP) 
+6047 fe 01		                CP      1 
+6049 28 e3		                JR      Z,CMD_L010 
+604b 18 e9		                JR      CMD_L020 
+604d			CMD_L030: 
+604d cd 60 63		                CALL    IN_SIO 
+6050 da 04 61		                JP      C,CMD_CANCEL 
+6053 fe 04		                CP      EOT 
+6055 28 5c		                JR      Z,CMD_030 
+6057 fe 01		                CP      SOH 
+6059 28 0a		                JR      Z,CMD_010 
+605b 3a 1d f2		                LD      A,(TIMEUP) 
+605e fe 01		                CP      1 
+6060 ca f0 60		                JP      Z,CMD_CANCEL2 
+6063 18 e8		                JR      CMD_L030 
+6065			CMD_010: 
+6065 cd 61 62		                CALL    CLR_RCVBUF 
+6068 77			                LD      (HL),A 
+6069 23			                INC     HL 
+606a 06 83		                LD      B,131 
+606c			CMD_L040: 
+606c cd 60 63		                CALL    IN_SIO 
+606f da 04 61		                JP      C,CMD_CANCEL 
+6072 f5			                PUSH    AF 
+6073 3a 1d f2		                LD      A,(TIMEUP) 
+6076 fe 01		                CP      1 
+6078 28 75		                JR      Z,CMD_CANCEL3 
+607a f1			                POP     AF 
+607b 77			                LD      (HL),A 
+607c 23			                INC     HL 
+607d 10 ed		                DJNZ    CMD_L040 
+607f			; 
+607f cd 58 63		                CALL    DISABLE_RTS 
+6082 cd 98 62		                CALL    CHKDATA 
+6085 38 20		                JR      C,CMD_020 
+6087 cd 70 62		                CALL    CHK_MEMOVER 
+608a 38 64		                JR      C,CMD_CANCEL2 
+608c 21 32 f2		                LD      HL,RCVBUF_DATA 
+608f 01 80 00		                LD      BC,128 
+6092 ed b0		                LDIR 
+6094 cd c5 62		                CALL    DISP_PROGRESS 
+6097 cd 50 63		                CALL    ENABLE_RTS 
+609a			; 
+609a 3e 06		                LD      A,ACK 
+609c cd a4 63		                CALL    OUT_SIO         
+609f 38 63		                JR      C,CMD_CANCEL 
+60a1 21 1e f2		                LD      HL,CHKBLKNO 
+60a4 34			                INC     (HL) 
+60a5 18 a6		                JR      CMD_L030 
+60a7			CMD_020: 
+60a7 cd 50 63		                CALL    ENABLE_RTS 
+60aa 3e 15		                LD      A,NAK 
+60ac cd a4 63		                CALL    OUT_SIO         
+60af 38 53		                JR      C,CMD_CANCEL 
+60b1 18 9a		                JR      CMD_L030 
+60b3			CMD_030: 
+60b3 3e 06		                LD      A,ACK 
+60b5 cd a4 63		                CALL    OUT_SIO 
+60b8 cd 0a 63		                CALL    TERM_SIO 
+60bb e1			                POP     HL 
+60bc 3a 1c f2		                LD      A,(FLGLOADBAS) 
+60bf fe 01		                CP      1 
+60c1 28 10		                JR      Z,CMD_FIXBAS 
+60c3 e5			                PUSH    HL 
+60c4 21 00 00		                LD      HL,0 
+60c7 ed 5b 1a f2	                LD      DE,(EXECADRS) 
+60cb cd d3 5e		                CALL    ROM_CMPHLDE     ;         Z CY 
+60ce			                                        ; HL<DE : 0  1 
+60ce			                                        ; HL=DE : 1  0 
+60ce			                                        ; HL>DE : 0  0 
+60ce e1			                POP     HL 
+60cf 28 3c		                JR      Z,CMD_EXIT 
+60d1 eb			                EX      DE,HL 
+60d2 e9			                JP      (HL) 
+60d3			CMD_FIXBAS: 
+60d3 e5			                PUSH    HL 
+60d4 d5			                PUSH    DE 
+60d5 2a 18 f2		                LD      HL,(LOADADRS) 
+60d8 eb			                EX      DE,HL 
+60d9 ed 52		                SBC     HL,DE 
+60db e5			                PUSH    HL 
+60dc c1			                POP     BC 
+60dd e1			                POP     HL 
+60de af			                XOR     A 
+60df ed b9		                CPDR 
+60e1 23			                INC     HL 
+60e2 23			                INC     HL 
+60e3 22 a0 ef		                LD      (VARAREA_TOP),  HL 
+60e6 22 a2 ef		                LD      (ARRAYAREA_TOP),HL 
+60e9 22 a4 ef		                LD      (FREEAREA_TOP), HL 
+60ec e1			                POP     HL 
+60ed 18 1e		                JR      CMD_EXIT 
+60ef			CMD_CANCEL3: 
+60ef f1			                POP     AF 
+60f0			CMD_CANCEL2: 
+60f0 cd ca 5f		                CALL    ROM_DSPCRLF 
+60f3 af			                XOR     A 
+60f4 32 49 eb		                LD      (OUTPUT_DEVICE),A 
+60f7 3c			                INC     A 
+60f8 32 64 ea		                LD      (CURSOR_XPOS),A 
+60fb 21 bc 63		                LD      HL,ERR_MSG 
+60fe cd ed 52		                CALL    ROM_MSGOUT 
+6101 cd 43 0d		                CALL    ROM_BEEP 
+6104			CMD_CANCEL: 
+6104 3e 18		                LD      A,CAN 
+6106 cd a4 63		                CALL    OUT_SIO 
+6109 cd 0a 63		                CALL    TERM_SIO 
+610c e1			                POP     HL 
+610d			CMD_EXIT: 
+610d c9			                RET 
+610e			CMD_ERR_EXIT: 
+610e d1			                POP     DE 
+610f c3 df 3b		                JP      ROM_SYNERR 
+6112			; 
+6112			; 
+6112			; 
+6112			PARSER_CMDPARAM: 
+6112 e5			                PUSH    HL 
+6113 21 00 00		                LD      HL,0 
+6116 22 18 f2		                LD      (LOADADRS),HL 
+6119 22 1a f2		                LD      (EXECADRS),HL 
+611c af			                XOR     A 
+611d 32 1c f2		                LD      (FLGLOADBAS),A 
+6120 e1			                POP     HL 
+6121 7e			                LD      A,(HL) 
+6122 fe 52		                CP      'R' 
+6124 c2 5f 62		                JP      NZ,SETCFRET 
+6127 23			                INC     HL 
+6128 7e			                LD      A,(HL) 
+6129 fe 43		                CP      'C' 
+612b c2 5f 62		                JP      NZ,SETCFRET 
+612e 23			                INC     HL 
+612f 7e			                LD      A,(HL) 
+6130 fe 56		                CP      'V' 
+6132 c2 5f 62		                JP      NZ,SETCFRET 
+6135 cd e5 61		                CALL    PARSER_SKIP 
+6138 11 4f 61		                LD      DE,PARSER_CMDPARAM_010 
+613b d5			                PUSH    DE 
+613c fe 45		                CP      'E' 
+613e ca f9 61		                JP      Z,PARSER_CMDPARAM_PE 
+6141 fe 4f		                CP      'O' 
+6143 ca 01 62		                JP      Z,PARSER_CMDPARAM_PO 
+6146 fe 4e		                CP      'N' 
+6148 ca 09 62		                JP      Z,PARSER_CMDPARAM_PN 
+614b d1			                POP     DE 
+614c c3 5f 62		                JP      SETCFRET 
+614f			PARSER_CMDPARAM_010: 
+614f 23			                INC     HL 
+6150 7e			                LD      A,(HL) 
+6151 11 63 61		                LD      DE,PARSER_CMDPARAM_020 
+6154 d5			                PUSH    DE 
+6155 fe 38		                CP      '8' 
+6157 ca 11 62		                JP      Z,PARSER_CMDPARAM_8BIT 
+615a fe 37		                CP      '7' 
+615c ca 20 62		                JP      Z,PARSER_CMDPARAM_7BIT 
+615f d1			                POP     DE 
+6160 c3 5f 62		                JP      SETCFRET 
+6163			PARSER_CMDPARAM_020: 
+6163 23			                INC     HL 
+6164 7e			                LD      A,(HL) 
+6165 11 7c 61		                LD      DE,PARSER_CMDPARAM_030 
+6168 d5			                PUSH    DE 
+6169 fe 31		                CP      '1' 
+616b ca 2f 62		                JP      Z,PARSER_CMDPARAM_SBIT1 
+616e fe 32		                CP      '2' 
+6170 ca 38 62		                JP      Z,PARSER_CMDPARAM_SBIT1_5 
+6173 fe 33		                CP      '3' 
+6175 ca 41 62		                JP      Z,PARSER_CMDPARAM_SBIT2 
+6178 d1			                POP     DE 
+6179 c3 5f 62		                JP      SETCFRET 
+617c			PARSER_CMDPARAM_030: 
+617c 23			                INC     HL 
+617d 7e			                LD      A,(HL) 
+617e 11 90 61		                LD      DE,PARSER_CMDPARAM_040 
+6181 d5			                PUSH    DE 
+6182 fe 30		                CP      '0' 
+6184 ca 4a 62		                JP      Z,PARSER_CMDPARAM_BRATEFAC64 
+6187 fe 31		                CP      '1' 
+6189 ca 53 62		                JP      Z,PARSER_CMDPARAM_BRATEFAC16 
+618c d1			                POP     DE 
+618d c3 5f 62		                JP      SETCFRET 
+6190			PARSER_CMDPARAM_040: 
+6190 cd e5 61		                CALL    PARSER_SKIP 
+6193 fe 0c		                CP      0CH             ; ID CODE "&H" 
+6195 ca bb 61		                JP      Z,PARSER_CMDPARAM_LOADADRS 
+6198 fe 42		                CP      'B' 
+619a c2 5f 62		                JP      NZ,SETCFRET 
+619d 23			                INC     HL 
+619e 7e			                LD      A,(HL) 
+619f fe 41		                CP      'A' 
+61a1 c2 5f 62		                JP      NZ,SETCFRET 
+61a4 23			                INC     HL 
+61a5 7e			                LD      A,(HL) 
+61a6 fe 53		                CP      'S' 
+61a8 c2 5f 62		                JP      NZ,SETCFRET 
+61ab 23			                INC     HL 
+61ac 3e 01		                LD      A,1 
+61ae 32 1c f2		                LD      (FLGLOADBAS),A 
+61b1 ed 5b 54 eb	                LD      DE,(BASAREA_TOP) 
+61b5 ed 53 18 f2	                LD      (LOADADRS),DE 
+61b9 18 24		                JR      PARSER_CMDPARAM_EXIT 
+61bb			PARSER_CMDPARAM_LOADADRS: 
+61bb 23			                INC     HL 
+61bc 5e			                LD      E,(HL) 
+61bd 23			                INC     HL 
+61be 56			                LD      D,(HL) 
+61bf 23			                INC     HL 
+61c0 ed 53 18 f2	                LD      (LOADADRS),DE 
+61c4 7e			                LD      A,(HL) 
+61c5 fe 00		                CP      0 
+61c7 28 16		                JR      Z,PARSER_CMDPARAM_EXIT 
+61c9 fe 3a		                CP      ':' 
+61cb 28 12		                JR      Z,PARSER_CMDPARAM_EXIT 
+61cd 2b			                DEC     HL 
+61ce cd e5 61		                CALL    PARSER_SKIP 
+61d1 fe 0c		                CP      0CH             ; ID CODE "&H" 
+61d3 c2 5f 62		                JP      NZ,SETCFRET 
+61d6			PARSER_CMDPARAM_EXECADRS: 
+61d6 23			                INC     HL 
+61d7 5e			                LD      E,(HL) 
+61d8 23			                INC     HL 
+61d9 56			                LD      D,(HL) 
+61da 23			                INC     HL 
+61db ed 53 1a f2	                LD      (EXECADRS),DE 
+61df			PARSER_CMDPARAM_EXIT: 
+61df ed 5b 18 f2	                LD      DE,(LOADADRS) 
+61e3 18 77		                JR      CLRCFRET 
+61e5			PARSER_SKIP: 
+61e5 23			                INC     HL 
+61e6 7e			                LD      A,(HL) 
+61e7 fe 20		                CP      ' ' 
+61e9 28 fa		                JR      Z,PARSER_SKIP 
+61eb fe 2c		                CP      ',' 
+61ed 28 03		                JR      Z,PARSER_SKIP_010 
+61ef d1			                POP     DE 
+61f0 18 6d		                JR      SETCFRET 
+61f2			PARSER_SKIP_010: 
+61f2 23			                INC     HL 
+61f3 7e			                LD      A,(HL) 
+61f4 fe 20		                CP      ' ' 
+61f6 28 fa		                JR      Z,PARSER_SKIP_010 
+61f8 c9			                RET 
+61f9			PARSER_CMDPARAM_PE: 
+61f9 06 01		                LD      B,1 
+61fb 3e 30		                LD      A,00110000B 
+61fd 32 16 f2		                LD      (MODEWORD),A 
+6200 c9			                RET 
+6201			PARSER_CMDPARAM_PO: 
+6201 06 01		                LD      B,1 
+6203 3e 10		                LD      A,00010000B 
+6205 32 16 f2		                LD      (MODEWORD),A 
+6208 c9			                RET 
+6209			PARSER_CMDPARAM_PN: 
+6209 06 00		                LD      B,0 
+620b 3e 00		                LD      A,00000000B 
+620d 32 16 f2		                LD      (MODEWORD),A 
+6210 c9			                RET 
+6211			PARSER_CMDPARAM_8BIT: 
+6211 78			                LD      A,B 
+6212 fe 01		                CP      1 
+6214 ca 5f 62		                JP      Z,SETCFRET 
+6217 3a 16 f2		                LD      A,(MODEWORD) 
+621a f6 0c		                OR      00001100B 
+621c 32 16 f2		                LD      (MODEWORD),A 
+621f c9			                RET 
+6220			PARSER_CMDPARAM_7BIT: 
+6220 78			                LD      A,B 
+6221 fe 00		                CP      0 
+6223 ca 5f 62		                JP      Z,SETCFRET 
+6226 3a 16 f2		                LD      A,(MODEWORD) 
+6229 f6 08		                OR      00001000B 
+622b 32 16 f2		                LD      (MODEWORD),A 
+622e c9			                RET 
+622f			PARSER_CMDPARAM_SBIT1: 
+622f 3a 16 f2		                LD      A,(MODEWORD) 
+6232 f6 40		                OR      01000000B 
+6234 32 16 f2		                LD      (MODEWORD),A 
+6237 c9			                RET 
+6238			PARSER_CMDPARAM_SBIT1_5: 
+6238 3a 16 f2		                LD      A,(MODEWORD) 
+623b f6 80		                OR      10000000B 
+623d 32 16 f2		                LD      (MODEWORD),A 
+6240 c9			                RET 
+6241			PARSER_CMDPARAM_SBIT2: 
+6241 3a 16 f2		                LD      A,(MODEWORD) 
+6244 f6 c0		                OR      11000000B 
+6246 32 16 f2		                LD      (MODEWORD),A 
+6249 c9			                RET 
+624a			PARSER_CMDPARAM_BRATEFAC64: 
+624a 3a 16 f2		                LD      A,(MODEWORD) 
+624d f6 03		                OR      00000011B 
+624f 32 16 f2		                LD      (MODEWORD),A 
+6252 c9			                RET 
+6253			PARSER_CMDPARAM_BRATEFAC16: 
+6253 3a 16 f2		                LD      A,(MODEWORD) 
+6256 f6 02		                OR      00000010B 
+6258 32 16 f2		                LD      (MODEWORD),A 
+625b c9			                RET 
+625c			CLRCFRET: 
+625c 37			                SCF 
+625d 3f			                CCF 
+625e c9			                RET 
+625f			SETCFRET: 
+625f 37			                SCF 
+6260 c9			                RET 
+6261			; 
+6261			; 
+6261			; 
+6261			CLR_RCVBUF: 
+6261 21 2f f2		                LD      HL,RCVBUF_TOP 
+6264 f5			                PUSH    AF 
+6265 e5			                PUSH    HL 
+6266 06 84		                LD      B,RCVBUF_BOTTOM - RCVBUF_TOP + 1 
+6268 af			                XOR     A 
+6269			CLR_RCVBUF_L010: 
+6269 77			                LD      (HL),A 
+626a 23			                INC     HL 
+626b 10 fc		                DJNZ    CLR_RCVBUF_L010 
+626d e1			                POP     HL 
+626e f1			                POP     AF 
+626f c9			                RET 
+6270			; 
+6270			; 
+6270			; 
+6270			CHK_MEMOVER: 
+6270 01 80 00		                LD      BC,128 
+6273 d5			                PUSH    DE 
+6274 21 00 60		                LD      HL,_PROG_TOP 
+6277 11 00 80		                LD      DE,PC8001RAM_TOP 
+627a cd d3 5e		                CALL    ROM_CMPHLDE     ;         Z CY 
+627d			                                        ; HL<DE : 0  1 
+627d			                                        ; HL=DE : 1  0 
+627d			                                        ; HL>DE : 0  0 
+627d d1			                POP     DE 
+627e 38 0c		                JR      C,CHK_MEMOVER_010 
+6280 d5			                PUSH    DE 
+6281 eb			                EX      DE,HL 
+6282 09			                ADD     HL,BC 
+6283 eb			                EX      DE,HL 
+6284 21 00 60		                LD      HL,_PROG_TOP 
+6287 cd d3 5e		                CALL    ROM_CMPHLDE     ;         Z CY 
+628a			                                        ; HL<DE : 0  1 
+628a			                                        ; HL=DE : 1  0 
+628a			                                        ; HL>DE : 0  0 
+628a d1			                POP     DE 
+628b d8			                RET     C 
+628c			CHK_MEMOVER_010: 
+628c d5			                PUSH    DE 
+628d eb			                EX      DE,HL 
+628e 09			                ADD     HL,BC 
+628f eb			                EX      DE,HL 
+6290 21 00 ea		                LD      HL,ROMBAS_WORKTOP 
+6293 cd d3 5e		                CALL    ROM_CMPHLDE     ;         Z CY 
+6296			                                        ; HL<DE : 0  1 
+6296			                                        ; HL=DE : 1  0 
+6296			                                        ; HL>DE : 0  0 
+6296 d1			                POP     DE 
+6297 c9			                RET 
+6298			; 
+6298			; 
+6298			; 
+6298			CHKDATA: 
+6298 21 2f f2		                LD      HL,RCVBUF_TOP 
+629b 7e			                LD      A,(HL) 
+629c fe 01		                CP      SOH 
+629e 20 bf		                JR      NZ,SETCFRET 
+62a0 4f			                LD      C,A 
+62a1 23			                INC     HL 
+62a2 3a 1e f2		                LD      A,(CHKBLKNO) 
+62a5 be			                CP      (HL) 
+62a6 20 b7		                JR      NZ,SETCFRET 
+62a8 81			                ADD     A,C 
+62a9 4f			                LD      C,A 
+62aa 23			                INC     HL 
+62ab 3a 1e f2		                LD      A,(CHKBLKNO) 
+62ae 2f			                CPL 
+62af be			                CP      (HL) 
+62b0 20 ad		                JR      NZ,SETCFRET 
+62b2 81			                ADD     A,C 
+62b3 4f			                LD      C,A 
+62b4 23			                INC     HL 
+62b5 06 80		                LD      B,128 
+62b7			CHKDATA_L010: 
+62b7 7e			                LD      A,(HL) 
+62b8 81			                ADD     A,C 
+62b9 4f			                LD      C,A 
+62ba 23			                INC     HL 
+62bb 10 fa		                DJNZ    CHKDATA_L010 
+62bd 79			                LD      A,C 
+62be be			                CP      (HL) 
+62bf c2 5f 62		                JP      NZ,SETCFRET 
+62c2 c3 5c 62		                JP      CLRCFRET 
+62c5			; 
+62c5			; 
+62c5			; 
+62c5			DISP_PROGRESS: 
+62c5 d5			                PUSH    DE 
+62c6 e5			                PUSH    HL 
+62c7 3e 01		                LD      A,1 
+62c9 32 64 ea		                LD      (CURSOR_XPOS),A 
+62cc 3e 5b		                LD      A,'[' 
+62ce cd 57 02		                CALL    ROM_DSPCHR 
+62d1 2a 18 f2		                LD      HL,(LOADADRS) 
+62d4 cd c0 5e		                CALL    ROM_DSPHEX4 
+62d7 3e 2d		                LD      A,'-' 
+62d9 cd 57 02		                CALL    ROM_DSPCHR 
+62dc eb			                EX      DE,HL 
+62dd 2b			                DEC     HL 
+62de cd c0 5e		                CALL    ROM_DSPHEX4 
+62e1 3e 5d		                LD      A,']' 
+62e3 cd 57 02		                CALL    ROM_DSPCHR 
+62e6 e1			                POP     HL 
+62e7 d1			                POP     DE 
+62e8 c9			                RET 
+62e9			; 
+62e9			; 
+62e9			; 
+62e9			INIT_SIO: 
+62e9 af			                XOR     A               ; DUMMY OUT 
+62ea d3 21		                OUT     (USARTCW),A 
+62ec d3 21		                OUT     (USARTCW),A 
+62ee d3 21		                OUT     (USARTCW),A 
+62f0 3e 40		                LD      A,01000000B     ; SOFT RESET 
+62f2 d3 21		                OUT     (USARTCW),A 
+62f4 3a 16 f2		                LD      A,(MODEWORD)    ; MODE SETUP 
+62f7 d3 21		                OUT     (USARTCW),A 
+62f9 3e 15		                LD      A,00010101B     ; COMMAND SETUP  TRANSMIT ENABLE 
+62fb			                                        ;                DATA TERMINAL READY : FALSE 
+62fb			                                        ;                RECEIVE ENABLE 
+62fb			                                        ;                ERROR RESET 
+62fb			                                        ;                REQUEST TO SEND : FALSE 
+62fb d3 21		                OUT     (USARTCW),A 
+62fd 32 17 f2		                LD      (CTLWORD),A 
+6300 cd 28 63		                CALL    ENABLE_SIO 
+6303 cd 40 63		                CALL    ENABLE_DTR 
+6306 cd 50 63		                CALL    ENABLE_RTS 
+6309 c9			                RET 
+630a			; 
+630a			; 
+630a			; 
+630a			TERM_SIO: 
+630a d5			                PUSH    DE 
+630b cd 02 16		                CALL    ROM_TIMEREAD 
+630e 3a 76 ea		                LD      A,(BCD_TIME_SEC) 
+6311 57			                LD      D,A 
+6312			TERM_SIO_010: 
+6312 d5			                PUSH    DE 
+6313 cd 02 16		                CALL    ROM_TIMEREAD 
+6316 d1			                POP     DE 
+6317 3a 76 ea		                LD      A,(BCD_TIME_SEC) 
+631a ba			                CP      D 
+631b 28 f5		                JR      Z,TERM_SIO_010 
+631d cd 58 63		                CALL    DISABLE_RTS 
+6320 cd 48 63		                CALL    DISABLE_DTR 
+6323 cd 35 63		                CALL    DISABLE_SIO 
+6326 d1			                POP     DE 
+6327 c9			                RET 
+6328			; 
+6328			; 
+6328			; 
+6328			ENABLE_SIO: 
+6328 3a 66 ea		                LD      A,(CTL1_OUTDATA) 
+632b e6 cf		                AND     11001111B       ; BS2,BS1 CLR 
+632d f6 20		                OR      00100000B       ; BS2 ON 
+632f d3 30		                OUT     (CONTROL1),A 
+6331 32 66 ea		                LD      (CTL1_OUTDATA),A 
+6334 c9			                RET 
+6335			; 
+6335			; 
+6335			; 
+6335			DISABLE_SIO: 
+6335 3a 66 ea		                LD      A,(CTL1_OUTDATA) 
+6338 e6 cf		                AND     11001111B       ; BS2,BS1 CLR 
+633a d3 30		                OUT     (CONTROL1),A 
+633c 32 66 ea		                LD      (CTL1_OUTDATA),A 
+633f c9			                RET 
+6340			; 
+6340			; 
+6340			; 
+6340			ENABLE_DTR: 
+6340 3a 17 f2		                LD      A,(CTLWORD) 
+6343 f6 02		                OR      00000010B       ; DATA TERMINAL READY : TRUE 
+6345 d3 21		                OUT     (USARTCW),A 
+6347 c9			                RET 
+6348			; 
+6348			; 
+6348			; 
+6348			DISABLE_DTR: 
+6348 3a 17 f2		                LD      A,(CTLWORD) 
+634b e6 fd		                AND     11111101B       ; DATA TERMINAL READY : FALSE 
+634d d3 21		                OUT     (USARTCW),A 
+634f c9			                RET 
+6350			; 
+6350			; 
+6350			; 
+6350			ENABLE_RTS: 
+6350 3a 17 f2		                LD      A,(CTLWORD) 
+6353 f6 20		                OR      00100000B       ; REQUEST TO SEND : TRUE 
+6355 d3 21		                OUT     (USARTCW),A 
+6357 c9			                RET 
+6358			; 
+6358			; 
+6358			; 
+6358			DISABLE_RTS: 
+6358 3a 17 f2		                LD      A,(CTLWORD) 
+635b e6 df		                AND     11011111B       ; REQUEST TO SEND : FALSE 
+635d d3 21		                OUT     (USARTCW),A 
+635f c9			                RET 
+6360			; 
+6360			; 
+6360			; 
+6360			IN_SIO: 
+6360 af			                XOR     A 
+6361 32 1d f2		                LD      (TIMEUP),A 
+6364 c5			                PUSH    BC 
+6365 e5			                PUSH    HL 
+6366 21 03 00		                LD      HL,3            ; 5194msec Timer 
+6369 01 00 80		                LD      BC,8000H 
+636c			IN_SIO_010: 
+636c db 09		                IN      A,(KEYBRD9) 
+636e e6 01		                AND     00000001B 
+6370 ca 80 63		                JP      Z,IN_SIO_030 
+6373 db 21		                IN      A,(USARTCW) 
+6375 e6 02		                AND     00000010B 
+6377 28 0c		                JR      Z,IN_SIO_040 
+6379 db 20		                IN      A,(USARTDW) 
+637b			IN_SIO_020: 
+637b e1			                POP     HL 
+637c c1			                POP     BC 
+637d c3 5c 62		                JP      CLRCFRET 
+6380			IN_SIO_030: 
+6380 e1			                POP     HL 
+6381 c1			                POP     BC 
+6382 c3 5f 62		                JP      SETCFRET 
+6385			IN_SIO_040: 
+6385 0b			                DEC     BC 
+6386 79			                LD      A,C 
+6387 fe 00		                CP      0 
+6389 20 e1		                JR      NZ,IN_SIO_010 
+638b 78			                LD      A,B 
+638c fe 00		                CP      0 
+638e 20 dc		                JR      NZ,IN_SIO_010 
+6390 2b			                DEC     HL 
+6391 7d			                LD      A,L 
+6392 fe 00		                CP      0 
+6394 20 d6		                JR      NZ,IN_SIO_010 
+6396 7c			                LD      A,H 
+6397 fe 00		                CP      0 
+6399 20 d1		                JR      NZ,IN_SIO_010 
+639b 3e 01		                LD      A,1 
+639d 32 1d f2		                LD      (TIMEUP),A 
+63a0 3e 00		                LD      A,0 
+63a2 18 d7		                JR      IN_SIO_020 
+63a4			; 
+63a4			; 
+63a4			; 
+63a4			OUT_SIO: 
+63a4 f5			                PUSH    AF 
+63a5			OUT_SIO1: 
+63a5 db 09		                IN      A,(KEYBRD9) 
+63a7 e6 01		                AND     00000001B 
+63a9 ca b8 63		                JP      Z,OUT_SIO2 
+63ac db 21		                IN      A,(USARTCW) 
+63ae e6 01		                AND     00000001B 
+63b0 28 f3		                JR      Z,OUT_SIO1 
+63b2 f1			                POP     AF 
+63b3 d3 20		                OUT     (USARTDW),A 
+63b5 c3 5c 62		                JP      CLRCFRET 
+63b8			OUT_SIO2: 
+63b8 f1			                POP     AF 
+63b9 c3 5f 62		                JP      SETCFRET 
+63bc			; 
+63bc .. 00		ERR_MSG:        DB      "Abort Receive",0 
+63ca			                ;END 
+63ca			 
+# End of file cmdrcv.asm
+63ca			; 
+63ca			; 
+63ca			; 
+63ca			_USER_ROM_END: 
+63ca 0xff...		                DS      4096 - ( _USER_ROM_END - _USER_ROM_START ), 0FFH 
+7000			                END 
+			
+
+# End of file cmdrcv_4krom.asm
+7000
