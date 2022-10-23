@@ -41,6 +41,7 @@ public:
   {
     m_cmtMode    = false;
     m_reset      = false;
+    m_reset2     = false;
     m_vram       = vram;
     m_buffsize   = 0;
     m_buff       = cmtBuffer;
@@ -124,13 +125,17 @@ public:
     {
       if ( value & 0x20 )
       {
+        _DEBUG_PRINT( "%s(%d) NON RESET 0x%02X\r\n", __func__, __LINE__, value );
         m_cmtMode = false;
         m_reset   = false;
+        m_reset2  = false;
       }
       else
       {
+        _DEBUG_PRINT( "%s(%d) RESET 0x%02X\r\n", __func__, __LINE__, value );
         m_cmtMode = true;
         m_reset   = true;
+        m_reset2  = true;
       }
     }
     return false;
@@ -166,9 +171,9 @@ private:
   {
     if ( m_reset == true )
     {
-      m_reset = false;
-      m_index = 0;
-      *result = 0xFF;
+      m_reset  = false;
+      m_reset2 = true;
+      *result  = 0xFF;
       return;
     }
     if ( m_buff == NULL )
@@ -179,16 +184,21 @@ private:
     if ( m_index >= m_buffsize )
       m_index = 0;
     *result = m_buff[ m_index++ ];
+    _DEBUG_PRINT( "%s(%d) %d %d %d 0x%02X\r\n", __func__, __LINE__, m_reset, m_reset2, m_index, *result );
   }
 
   void cmt_cmd( int value )
   {
     if ( value == 0x40 )
-      m_reset = true;
+    {
+      m_reset  = true;
+      m_reset2 = true;
+    }
 #ifndef DONT_CMT_SAVE_INDICATOR
     if ( value == 0x11 )
       m_vram[ m_statusAdrs ] = '#';
 #endif // !DONT_CMT_SAVE_INDICATOR
+    _DEBUG_PRINT( "%s(%d) %d %d 0x%02X\r\n", __func__, __LINE__, m_reset, m_reset2, value );
   }
 
   void cmt_write( int value )
@@ -201,6 +211,17 @@ private:
       code = ' ';
     m_vram[ m_statusAdrs ] = code;
 #endif // !DONT_CMT_SAVE_INDICATOR
+    _DEBUG_PRINT( "%s(%d) %d %d %d\r\n", __func__, __LINE__, m_reset, m_reset2, m_index );
+    if ( m_reset == true )
+    {
+      m_reset = false;
+      m_index = 0;
+    }
+    if ( m_reset2 == true )
+    {
+      m_reset2 = false;
+      m_index  = 0;
+    }
     m_buff[ m_index++ ] = value;
     writeEndCheck();
   }
@@ -287,6 +308,7 @@ private:
   }
 
   bool        m_reset;                // reset flag
+  bool        m_reset2;               // mon W/csave reset flag
   uint8_t *   m_buff;                 // cmt data buff ptr
   uint32_t    m_buffsize;             // cmt data buff size
   uint32_t    m_index;                // buff current offset ptr

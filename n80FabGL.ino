@@ -208,7 +208,8 @@ void setup()
 #ifdef NARYA_2_0
   // RXD(RD) : GPIO34
   // TXD(SD) : GPIO26
-  Serial2.begin( 4800, SERIAL_8N1, 34, 26 );
+  //Serial2.begin( 4800, SERIAL_8N1, 34, 26 );
+  Serial2.begin( 9600, SERIAL_8N1, 34, 26 );
   while ( !Serial2 && !Serial2.available() );
 #endif
 

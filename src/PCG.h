@@ -107,9 +107,10 @@ public:
   {
     return false;
   }
-  
+
   bool writeIO( int address, int value )
   {
+    _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X PCG\r\n", __func__, __LINE__, address, value );
     hal_mode( address, value );
     return true;
   }

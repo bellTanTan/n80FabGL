@@ -23,6 +23,18 @@
  */
 
 // 更新履歴
+// 2022/10/12 v1.0.8 多段ロード形式がロードできない(v1.0.7動作不良改修で出来なくなった(確認不足))
+//                     1.mon
+//                       *L
+//                       編集等
+//                       *Waaaa,bbbb
+//                     2.cload"nnn"
+//                       編集等
+//                       csave"nnn"
+//                     3.多段ロード形式
+//                       mon
+//                       *L
+//                     上記3パターンの動作確認を再度行いcmt関連動作不良改修
 // 2022/10/02 v1.0.7 以下の操作で mon W にてmicroSDにファイルが書き出されない動作不良改修(確認不足)
 //                     mon
 //                     *L
@@ -62,7 +74,7 @@
 
 #define N80FABGL_VERSION_MAJOR      1
 #define N80FABGL_VERSION_MINOR      0
-#define N80FABGL_VERSION_REVISION   7
+#define N80FABGL_VERSION_REVISION   8
 
 #define N80FABGL_VERSION            (  ((int)N80FABGL_VERSION_MAJOR) << 16 \
                                      | ((int)N80FABGL_VERSION_MINOR) << 8 \

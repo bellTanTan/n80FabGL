@@ -23,7 +23,7 @@ VGA 表示確認/アナログ音声入力確認した液晶モニタ/液晶TV<br
 MITSUBISHI/RDT198LM-A(BK) 元々 4:3<br>
 MITSUBISHI/RDT232WX(BK)   4:3 センター表示<br>
 MITSUBISHI/RDT235WX(BK)   4:3 センター表示<br>
-ASUS/VX238H-P             4:3 センター表示<br>
+ASUS/VX238H-P             16:9 へ引き伸ばし表示<br>
 Panasonic/TH-P42G2        16:9 へ引き伸ばし表示<br>
 SHARP/LC-32H11            4:3 センター表示<br>
 
