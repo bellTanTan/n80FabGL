@@ -1,6 +1,6 @@
 /*
   Created by tan (trinity09181718@gmail.com)
-  Copyright (c) 2022 tan
+  Copyright (c) 2022-2023 tan
   All rights reserved.
 
   This program is based on FabGL/examples/VGA/Altair8800/src/machine.cpp and
@@ -36,34 +36,40 @@ uint8_t * Machine::s_videoMemory;
 
 Machine::Machine()
 {
-  m_RAM               = NULL;
-  m_RAMExt            = NULL;
-  m_FONT              = NULL;
-  m_IoIn              = NULL;
-  m_IoOut             = NULL;
-  m_cmtBuffer         = NULL;
-  m_menuCallback      = NULL;
-  m_RAMSize           = 0;
-  m_RAMExtSize        = 0;
-  m_IOSize            = 0;
-  m_cmtBufferSize     = 0;
-  m_portE2writeData   = 0;
-  m_PCGMode           = 0;
-  m_printerEnable     = true;
-  m_diskRomEnable     = false;
-  m_diskEnable        = false;
-  m_menuCmdReset      = false;
-  m_menuCmdEspRestart = false;
-  m_cmtLoad           = false;
-  m_n80Load           = false;
-  m_n80LoadRam        = NULL;
-  m_n80LoadRamSize    = 0;
-  m_n80LoadSize       = 0;
-  m_fileIOBuf         = NULL;
-  m_fileIOBufSize     = 0;
-  m_requestPC         = 0;
-  m_requestSP         = 0;
-  m_ticksCounter      = 0;
+  m_RAM                     = NULL;
+  m_RAMExt                  = NULL;
+  m_FONT                    = NULL;
+  m_IoIn                    = NULL;
+  m_IoOut                   = NULL;
+  m_cmtBuffer               = NULL;
+  m_menuCallback            = NULL;
+  m_RAMSize                 = 0;
+  m_RAMExtSize              = 0;
+  m_IOSize                  = 0;
+  m_cmtBufferSize           = 0;
+  m_portE2writeData         = 0;
+  m_PCGMode                 = 0;
+  m_printerEnable           = true;
+  m_diskRomEnable           = false;
+  m_diskEnable              = false;
+  m_menuCmdReset            = false;
+  m_menuCmdEspRestart       = false;
+  m_cmtLoad                 = false;
+  m_n80Load                 = false;
+  m_n80LoadRam              = NULL;
+  m_n80LoadRamSize          = 0;
+  m_n80LoadSize             = 0;
+  m_fileIOBuf               = NULL;
+  m_fileIOBufSize           = 0;
+  m_requestPC               = 0;
+  m_requestSP               = 0;
+  m_requestIRQ              = false;
+  m_requestVectorLoAdrs     = 0;
+  m_selEsp32UartType        = 0;
+  m_selEsp32UartBpsType     = 0;
+  m_selEsp32UartBps         = 115200;
+  m_selNARYA20GroveUartType = 2;
+  m_ticksCounter            = 0;
   memset( m_menu2FileName, 0, sizeof( m_menu2FileName ) );
   memset( m_fdImgFileName, 0, sizeof( m_fdImgFileName ) );
 
@@ -96,7 +102,7 @@ Machine::~Machine()
 }
 
 
-int Machine::init( bool selDiskRomEnable )
+int Machine::init( bool selDiskRomEnable, int selEsp32UartType, int selEsp32UartBpsType, int selNARYA20GroveUartType )
 {
   s_videoMemory = (uint8_t *)heap_caps_malloc( VIDEO_MEM_SIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL );
   if ( !s_videoMemory ) return -1;
@@ -165,18 +171,57 @@ int Machine::init( bool selDiskRomEnable )
   m_CRT.setCallbacks( this, setScreenMode );
   m_KEYBRD.setCallbacks( this, vkf9, vkf10, vkf11, vkf12 );
   m_PCG.setCallbacks( this, setPCGMode, updatePCGFont );
+  m_UART.setCallbacks( this, intReq );   
+
+  m_selEsp32UartType        = selEsp32UartType;
+  m_selEsp32UartBpsType     = selEsp32UartBpsType;
+  m_selNARYA20GroveUartType = selNARYA20GroveUartType;
+  if ( m_selEsp32UartType == 0 )
+    m_selEsp32UartBps = 115200;
+  else
+  {
+    switch ( selEsp32UartBpsType )
+    {
+      case 0:
+        m_selEsp32UartBps = 9600;
+        break;
+      case 1:
+        m_selEsp32UartBps = 4800;
+        break;
+      case 2:
+        m_selEsp32UartBps = 2400;
+        break;
+      case 3:
+      case 6:
+        m_selEsp32UartBps = 1200;
+        break;
+      case 4:
+      case 7:
+        m_selEsp32UartBps = 600;
+        break;
+      case 5:
+      case 8:
+        m_selEsp32UartBps = 300;
+        break;
+    }
+  }
+  if ( m_selEsp32UartType == 0 )
+    m_printerEnable = true;
+  else
+    m_printerEnable = false;
 
   // Device reset
   uint8_t * vram = &m_RAM[0xF300];
-  bool result[8];
+  bool result[9];
   result[0] = m_BUZZER.reset( &m_soundGenerator );
   result[1] = m_CALENDAR.reset( m_diskEnable, m_printerEnable );
-  result[2] = m_CMT.reset( vram, m_cmtBufferSize, m_cmtBuffer );
+  result[2] = m_CMT.reset( vram, m_cmtBufferSize, m_cmtBuffer, m_selNARYA20GroveUartType );
   result[3] = m_CRT.reset( vram, m_frameBuffer );
   result[4] = m_DISK.reset( vram, m_diskEnable, &m_soundGenerator );
   result[5] = m_KEYBRD.reset( vram, m_keyboard );
   result[6] = m_PCG.reset( &m_FontPC8001, &m_FontPCG, &m_soundGenerator );
   result[7] = m_PRINTER.reset( m_printerEnable );
+  result[8] = m_UART.reset( m_selEsp32UartType, m_selEsp32UartBpsType, m_selEsp32UartBps );
   if ( !result[0] ) return -9;
   if ( !result[4] ) return -10;
   if ( !result[6] ) return -11;
@@ -207,12 +252,13 @@ void Machine::softReset( void * context )
   m->m_CGA.enablePCG( m_PCGMode );
   m->m_BUZZER.reset( &m->m_soundGenerator );
   m->m_CALENDAR.reset( m->m_diskEnable, m->m_printerEnable );
-  m->m_CMT.reset( vram, m->m_cmtBufferSize, m->m_cmtBuffer );
+  m->m_CMT.reset( vram, m->m_cmtBufferSize, m->m_cmtBuffer, m->m_selNARYA20GroveUartType );
   m->m_CRT.reset( vram, m->m_frameBuffer );
   m->m_DISK.softReset();
   m->m_KEYBRD.reset( vram, m->m_keyboard );
-  m->m_PCG.reset( &m_FontPC8001, &m_FontPCG, &m_soundGenerator );
+  m->m_PCG.reset( &m->m_FontPC8001, &m->m_FontPCG, &m->m_soundGenerator );
   m->m_PRINTER.reset( m->m_printerEnable );
+  m->m_UART.reset( m->m_selEsp32UartType, m->m_selEsp32UartBpsType, m->m_selEsp32UartBps );
   m->setScreenMode( context, 0 );
   m->m_Z80.reset();
   m->m_Z80.setPC( 0 );
@@ -542,36 +588,60 @@ void IRAM_ATTR Machine::cpuTask( void * pvParameters )
     else
     {
 #ifdef _DEBUG
-      switch ( seqNo )
+      if ( m->m_requestIRQ )
       {
-        case 0:
-          if ( enableSelBreadAdrs )
-          {
-            if ( m->m_Z80.getPC() == selBreakAdrs )
+        if ( m->m_Z80.getIM() == Z80_INTERRUPT_MODE_2 && m->m_Z80.getIFF1() )
+        {
+          // Vector Lo Address
+          cycles = m->m_Z80.IRQ( m->m_requestVectorLoAdrs );
+          if ( cycles > 0 )
+            m->m_requestIRQ = false;
+        }
+      }
+      if ( cycles == 0 )
+      {
+        switch ( seqNo )
+        {
+          case 0:
+            if ( enableSelBreadAdrs )
             {
-              m->registerDump( pvParameters, "break" );
-              seqNo = 10;
-              break;
+              if ( m->m_Z80.getPC() == selBreakAdrs )
+              {
+                m->registerDump( pvParameters, "break" );
+                seqNo = 10;
+                break;
+              }
             }
-          }
-          cycles = m->m_Z80.step();
-          break;
-        case 10:
-          // non
-          break;
-        case 20:
-          cycles = m->m_Z80.step();
-          m->registerDump( pvParameters, "step" );
-          seqNo = 10;
-          break;
-        case 30:
-          cycles = m->m_Z80.step();
-          m->registerDump( pvParameters, "continue" );
-          seqNo = 0;
-          break;
+            cycles = m->m_Z80.step();
+            break;
+          case 10:
+            // non
+            break;
+          case 20:
+            cycles = m->m_Z80.step();
+            m->registerDump( pvParameters, "step" );
+            seqNo = 10;
+            break;
+          case 30:
+            cycles = m->m_Z80.step();
+            m->registerDump( pvParameters, "continue" );
+            seqNo = 0;
+            break;
+        }
       }
 #else
-      cycles = m->m_Z80.step();
+      if ( m->m_requestIRQ )
+      {
+        if ( m->m_Z80.getIM() == Z80_INTERRUPT_MODE_2 && m->m_Z80.getIFF1() )
+        {
+          // Vector Lo Address
+          cycles = m->m_Z80.IRQ( m->m_requestVectorLoAdrs );
+          if ( cycles > 0 )
+            m->m_requestIRQ = false;
+        }
+      }
+      if ( cycles == 0 )
+        cycles = m->m_Z80.step();
 #endif // _DEBUG
     }
 
@@ -646,9 +716,23 @@ void Machine::backGround( void )
   }
 
 #ifdef _DEBUG
-  if ( Serial.available() )
+  // ESP32-WROVER-B & Arduino ESP32 v2.0.7において115200定義で115201と返ってきたｗ
+  // レート誤差3%未満ならOKなので実通信に障害は無い。
+  // だけど定数判定がダメなのでgcc最適化系も考慮して100割して行変えて100倍とする(笑)
+  long bps  = Serial.baudRate()  / 100;
+  long bps2 = Serial2.baudRate() / 100;
+  bps  *= 100;
+  bps2 *= 100;
+  HardwareSerial * pSerial = NULL;
+  if ( bps == 115200 )
+    pSerial = &Serial;
+#ifdef NARYA_2_0
+  else if ( bps2 == 115200 )
+    pSerial = &Serial2;
+#endif // NARYA_2_0
+  if ( pSerial && pSerial->available() )
   {
-    int recvData = Serial.read();
+    int recvData = pSerial->read();
     m_serialRecvBuf[m_serialRecvIndex] = recvData;
     m_serialRecvIndex++;
     if ( m_serialRecvIndex >= ARRAY_SIZE( m_serialRecvBuf ) )
@@ -742,6 +826,19 @@ int Machine::readIO( void * context, int address )
       m->m_CRT.readIO( address, &value );
       m->m_CALENDAR.setReadIO( address, value );
       break;
+    case 0xC0:
+    case 0xC1:
+    case 0xC2:
+    case 0xC3:
+      if ( !m->m_UART.readIO( address, &value ) )
+      {
+#ifdef _DEBUG
+        int ch = ( ( address == 0xC0 || address == 0xC1 ) ? 1 : 2 );
+#endif  // _DEBUG
+        // ignore
+        _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] RS-232C ch#%d\r\n", __func__, __LINE__, address, value, pc, ch );
+      }
+      break;
     case 0xD1:
     case 0xD8:
     case 0xDA:
@@ -829,28 +926,22 @@ void Machine::writeIO( void * context, int address, int value )
       break;
     case 0xC0:
     case 0xC1:
-      // ignore
-      _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] RS-232C ch#1\r\n", __func__, __LINE__, address, value, pc );
-      break;
     case 0xC2:
     case 0xC3:
-      // ignore
-      _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] RS-232C ch#2\r\n", __func__, __LINE__, address, value, pc );
+      if ( !m->m_UART.writeIO( address, value ) )
+      {
+#ifdef _DEBUG
+        int ch = ( ( address == 0xC0 || address == 0xC1 ) ? 1 : 2 );
+#endif  // _DEBUG
+        // ignore
+        _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] RS-232C ch#%d\r\n", __func__, __LINE__, address, value, pc, ch );
+      }
       break;
-    case 0xC4:
-    case 0xC5:
-    case 0xC6:
-    case 0xC7:
     case 0xC8:
-    case 0xC9:
     case 0xCA:
-    case 0xCB:
-    case 0xCC:
-    case 0xCD:
-    case 0xCE:
-    case 0xCF:
-      // ignore
-      _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] RS-232C disable\r\n", __func__, __LINE__, address, value, pc );
+      if ( !m->m_UART.writeIO( address, value ) )
+        // ignore
+        _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] RS-232C disable\r\n", __func__, __LINE__, address, value, pc );
       break;
     case 0xD0:
     case 0xD1:
@@ -871,11 +962,15 @@ void Machine::writeIO( void * context, int address, int value )
       m->m_portE2writeData = value;
       _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] extMemory Mode\r\n", __func__, __LINE__, address, value, pc );
       break;
-    case 0xE4:  // INT8~15
-    case 0xE5:  // INT0~7
-    case 0xE6:  // Realtime INT
+    case 0xE4:  // uPD8214 CURRENT STATUS : INT8~15
+    case 0xE5:  // uPD8214 CURRENT STATUS : INT0~7
+      if ( !m->m_UART.writeIO( address, value ) )
+        // ignore
+        _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] uPD8214 CURRENT STATUS\r\n", __func__, __LINE__, address, value, pc );
+      break;
+    case 0xE6:  // Realtime Clock INT
       // ignore
-      _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] interrupt mask\r\n", __func__, __LINE__, address, value, pc );
+      _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] rtc interrupt mask\r\n", __func__, __LINE__, address, value, pc );
       break;
     case 0xE7:
       // ignore
@@ -931,6 +1026,14 @@ void Machine::setRequestCpuCmd( requestCpuCmd cmd, uint16_t PC, uint16_t SP, uin
   }
 #endif // _DEBUG
   m_cmtLoad = false;
+}
+
+
+void Machine::intReq( void * context, int value )
+{
+  auto m = (Machine *)context;
+  m->m_requestVectorLoAdrs = value;
+  m->m_requestIRQ = true;
 }
 
 
@@ -1225,7 +1328,11 @@ void Machine::registerDump( void * context, const char * msg )
   uint8_t flag = reg[3] & 0x00FF;
   if ( msg )
     _MSG_PRINT( "\r\n%s\r\n", msg );
-  _MSG_PRINT( "MAIN CPU\r\nAF:%04X BC:%04X DE:%04X HL:%04X  S Z Y H X PV N C\r\n", reg[3], reg[0], reg[1], reg[2] );
+  _MSG_PRINT( "MAIN CPU:IM(%d) IFF1(%d) IFF2(%d)\r\n",
+              m->m_Z80.getIM(),
+              m->m_Z80.getIFF1(),
+              m->m_Z80.getIFF2() );
+  _MSG_PRINT( "AF:%04X BC:%04X DE:%04X HL:%04X  S Z Y H X PV N C\r\n", reg[3], reg[0], reg[1], reg[2] );
   _MSG_PRINT( "IX:%04X IY:%04X SP:%04X PC:%04X  %d %d %d %d %d  %d %d %d\r\n",
               reg[4], reg[5], reg[6], PC,
               ( flag & Z80_S_FLAG )  != 0 ? true : false, 
@@ -1603,7 +1710,19 @@ void _DEBUG_PRINT( const char * format, ... )
     va_start( ap, format );
     char buf[size + 1];
     vsnprintf( buf, size, format, ap );
-    Serial.printf( "%s", buf );
+    // ESP32-WROVER-B & Arduino ESP32 v2.0.7において115200定義で115201と返ってきたｗ
+    // レート誤差3%未満ならOKなので実通信に障害は無い。
+    // だけど定数判定がダメなのでgcc最適化系も考慮して100割して行変えて100倍とする(笑)
+    long bps  = Serial.baudRate()  / 100;
+    long bps2 = Serial2.baudRate() / 100;
+    bps  *= 100;
+    bps2 *= 100;
+    if ( bps == 115200 )
+      Serial.printf( "%s", buf );
+#ifdef NARYA_2_0
+    else if ( bps2 == 115200 )
+      Serial2.printf( "%s", buf );
+#endif // NARYA_2_0
   }
   va_end( ap );
 }
@@ -1622,7 +1741,19 @@ void _UPD765A_DEBUG_PRINT( const char * format, ... )
     va_start( ap, format );
     char buf[size + 1];
     vsnprintf( buf, size, format, ap );
-    Serial.printf( "%s", buf );
+    // ESP32-WROVER-B & Arduino ESP32 v2.0.7において115200定義で115201と返ってきたｗ
+    // レート誤差3%未満ならOKなので実通信に障害は無い。
+    // だけど定数判定がダメなのでgcc最適化系も考慮して100割して行変えて100倍とする(笑)
+    long bps  = Serial.baudRate()  / 100;
+    long bps2 = Serial2.baudRate() / 100;
+    bps  *= 100;
+    bps2 *= 100;
+    if ( bps == 115200 )
+      Serial.printf( "%s", buf );
+#ifdef NARYA_2_0
+    else if ( bps2 == 115200 )
+      Serial2.printf( "%s", buf );
+#endif // NARYA_2_0
   }
   va_end( ap );
 }
@@ -1640,7 +1771,19 @@ void _MSG_PRINT( const char * format, ... )
     va_start( ap, format );
     char buf[size + 1];
     vsnprintf( buf, size, format, ap );
-    Serial.printf( "%s", buf );
+    // ESP32-WROVER-B & Arduino ESP32 v2.0.7において115200定義で115201と返ってきたｗ
+    // レート誤差3%未満ならOKなので実通信に障害は無い。
+    // だけど定数判定がダメなのでgcc最適化系も考慮して100割して行変えて100倍とする(笑)
+    long bps  = Serial.baudRate()  / 100;
+    long bps2 = Serial2.baudRate() / 100;
+    bps  *= 100;
+    bps2 *= 100;
+    if ( bps == 115200 )
+      Serial.printf( "%s", buf );
+#ifdef NARYA_2_0
+    else if ( bps2 == 115200 )
+      Serial2.printf( "%s", buf );
+#endif // NARYA_2_0
   }
   va_end( ap );
 }

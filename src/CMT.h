@@ -1,6 +1,6 @@
 /*
   Created by tan (trinity09181718@gmail.com)
-  Copyright (c) 2022 tan
+  Copyright (c) 2022-2023 tan
   All rights reserved.
 
   This program is based on CMT.c in n80pi20210814.tar.gz
@@ -37,17 +37,18 @@
 class CMT
 {
 public:
-  bool reset( uint8_t * vram, int cmtBuffSize, uint8_t * cmtBuffer )
+  bool reset( uint8_t * vram, int cmtBuffSize, uint8_t * cmtBuffer, int selNARYA20GroveUartType )
   {
-    m_cmtMode    = false;
-    m_reset      = false;
-    m_reset2     = false;
-    m_vram       = vram;
-    m_buffsize   = 0;
-    m_buff       = cmtBuffer;
-    m_index      = 0;
-    m_basCmtSave = false;
-    m_monCmtSave = false;
+    m_cmtMode                 = false;
+    m_reset                   = false;
+    m_reset2                  = false;
+    m_vram                    = vram;
+    m_buffsize                = 0;
+    m_buff                    = cmtBuffer;
+    m_index                   = 0;
+    m_basCmtSave              = false;
+    m_monCmtSave              = false;
+    m_selNARYA20GroveUartType = selNARYA20GroveUartType;
     setScreenMode( 0 );
     return true;
   }
@@ -60,19 +61,11 @@ public:
         cmt_read( result );
       else
       {
-#ifdef NARYA_2_0
-        if ( Serial2.available() )
-          *result = Serial2.read();
-        else
-#endif // NARYA_2_0
-#ifndef _DEBUG
-  #ifndef NARYA_2_0
-        if ( Serial.available() )
-          *result = Serial.read();
-        else
-  #endif // !NARYA_2_0
-#endif // !_DEBUG
         *result = 0x00;
+#ifdef NARYA_2_0
+        if ( m_selNARYA20GroveUartType != 0 )
+          *result = ( Serial2.available() ? Serial2.read() : 0x00 );
+#endif // NARYA_2_0
       }
       return true;
     }
@@ -84,13 +77,9 @@ public:
       {
         *result = 0x85;
 #ifdef NARYA_2_0
-        *result |= ( Serial2.available() ? 0x02 : 0x00 );
+        if ( m_selNARYA20GroveUartType != 0 )
+          *result |= ( Serial2.available() ? 0x02 : 0x00 );
 #endif // NARYA_2_0
-#ifndef _DEBUG
-  #ifndef NARYA_2_0
-        *result |= ( Serial.available() ? 0x02 : 0x00 );
-  #endif // !NARYA_2_0
-#endif // !_DEBUG
       }
       return true;
     }
@@ -104,15 +93,9 @@ public:
       if ( m_cmtMode )
         cmt_write( value );
 #ifdef NARYA_2_0
-      else
+      else if ( m_selNARYA20GroveUartType != 0 )
         Serial2.write( value );
 #endif // NARYA_2_0
-#ifndef _DEBUG
-  #ifndef NARYA_2_0
-      else
-        Serial.write( value );
-  #endif // ! NARYA_2_0
-#endif // !_DEBUG
       return true;
     }
     if ( address == 0x21 )
@@ -323,4 +306,9 @@ private:
   uint16_t    m_monCmtSaveEndAdrs;    // Machine language type CMT save end address
   uint8_t *   m_vram;                 // v-ram pointer
   int         m_statusAdrs;           // Status address of csave or mon W execution
+  int         m_selNARYA20GroveUartType;
+                                      // NARYA2.0 GROVE UART TYPE
+                                      //   0 : 8N1 115200bps( m_selEsp32UartType != 0 && _DEBUG true 併用)
+                                      //   1 : 8N1 9600bps
+                                      //   2 : 8N1 4800bps
 };

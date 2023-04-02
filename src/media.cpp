@@ -1,6 +1,6 @@
 /*
   Created by tan (trinity09181718@gmail.com)
-  Copyright (c) 2022 tan
+  Copyright (c) 2022-2023 tan
   All rights reserved.
 
 * Please contact trinity09181718@gmail.com if you need a commercial license.
@@ -41,7 +41,9 @@ media::media()
   m_d88FileHeader = NULL;
   m_d88rwBuffer   = NULL;
   m_sectorBuffer  = NULL;
-  m_formatfp      = NULL;
+  m_formatData    = NULL;
+  m_formatMemSize = 0;
+  m_formatSeekPos = 0;
 
   memset( m_imgFileName,  0, sizeof( m_imgFileName ) );
 }
@@ -194,23 +196,45 @@ bool media::formatTrackBegin( int cylinder, int head, int sectorNoMax )
   if ( !( m_d88Type && m_inserted && m_mediaType == MEDIA_TYPE_2D && sectorNoMax == 16 ) ) return false;
   if ( !( cylinder >= 0 && cylinder <= 39 ) ) return false;
   if ( !( head >= 0 && head <= 1 ) )          return false;
-  m_formatfp = NULL;
-  auto fp = fopen( m_imgFileName, "r+" );
-  if ( !fp ) return false;
-  m_formatfp = fp;
+  if ( !m_formatData )
+  {
+    m_formatMemSize = (16 + 256) * sectorNoMax;
+    m_formatData = (uint8_t *)malloc( m_formatMemSize );
+    if ( !m_formatData )
+    {
+      _UPD765A_DEBUG_PRINT( "uPD765A %s(%d) malloc(%d) fail\r\n", __func__, __LINE__, m_formatMemSize );
+      return false;
+    }
+  }
+  m_formatSeekPos = 0;
+  _UPD765A_DEBUG_PRINT( "uPD765A %s(%d) '%s'\r\n", __func__, __LINE__, m_imgFileName );
   return true;
 }
 
 
 void media::formatTrackEnd( void )
 {
-  if ( !m_formatfp ) return;
-  fclose( m_formatfp );
-  m_formatfp = NULL;  
+  if ( m_formatMemSize == 0 || m_formatSeekPos == 0 )
+    return;
+#ifdef _UPD765A_DEBUG
+  uint32_t t0 = micros();
+#endif // _UPD765A_DEBUG
+  auto fp = fopen( m_imgFileName, "r+" );
+  if ( !fp ) return;
+  fseek( fp, m_formatSeekPos, SEEK_SET );
+  size_t result = fwrite( m_formatData, 1, m_formatMemSize, fp );
+  if ( result != m_formatMemSize )
+    _UPD765A_DEBUG_PRINT( "uPD765A %s(%d) fwrite fail\r\n", __func__, __LINE__ );
+  fclose( fp );
+#ifdef _UPD765A_DEBUG
+  uint32_t t1 = micros();
+  int dt = t1 - t0;
+  _UPD765A_DEBUG_PRINT( "uPD765A %s(%d) %d msec(%d usec)\r\n", __func__, __LINE__, dt / 1000, dt );
+#endif // _UPD765A_DEBUG
 }
 
 
-bool media::formatSector( int cylinder, int head, int sectorNo, int sectorLen, uint8_t fillData, int length )
+bool media::formatSector( int cylinder, int head, int sectorNo, int sectorLen, int eot, uint8_t fillData, int length )
 {
   if ( !( m_d88Type && m_inserted && m_mediaType == MEDIA_TYPE_2D && sectorLen == 1 ) ) return false;
   if ( !( cylinder >= 0 && cylinder <= 39 ) ) return false;
@@ -219,29 +243,36 @@ bool media::formatSector( int cylinder, int head, int sectorNo, int sectorLen, u
   if ( !( length == m_sectorSize ) )          return false;
   int d88SectorSize = 16 + m_sectorSize;
   int logicalTrack = ( cylinder * 2 ) + head;
-  size_t result = 0;
-  bool format = false;
+  if ( !m_formatData ) return false;
   int seekPos = sizeof( D88_FILE_HEADER )
-              + ( d88SectorSize * 16 * logicalTrack )
-              + ( d88SectorSize * ( sectorNo - 1 ) );
-  int sectorPos = m_d88FileHeader->trackTable[cylinder]
-                + ( d88SectorSize * 16 * cylinder )
-                + ( d88SectorSize * 16 * head )
+                + ( d88SectorSize * 16 * logicalTrack )
                 + ( d88SectorSize * ( sectorNo - 1 ) );
+  int sectorPos = m_d88FileHeader->trackTable[cylinder]
+                  + ( d88SectorSize * 16 * cylinder )
+                  + ( d88SectorSize * 16 * head )
+                  + ( d88SectorSize * ( sectorNo - 1 ) );
   if ( seekPos != sectorPos ) return false;
   if ( seekPos > m_fileSize ) return false;
-  if ( !m_formatfp ) return false;
-  fseek( m_formatfp, seekPos, SEEK_SET );
-  result = fread( &m_d88rwBuffer[0], 1, d88SectorSize, m_formatfp );
-  if ( result == d88SectorSize )
-  {
-    memset( &m_d88rwBuffer[16], fillData, m_sectorSize );
-    fseek( m_formatfp, seekPos, SEEK_SET );
-    result = fwrite( &m_d88rwBuffer[0], 1, d88SectorSize, m_formatfp );
-    if ( result == d88SectorSize )
-      format = true;
-  }
-  return format;
+  if ( m_formatSeekPos == 0 )
+    m_formatSeekPos = seekPos;
+  int offset = (16 + 256) * ( sectorNo - 1 );
+  PD88_FILE_SECTOR pD88SectorHead = (PD88_FILE_SECTOR)&m_formatData[offset];
+  pD88SectorHead->cylinder       = cylinder;
+  pD88SectorHead->head           = head;
+  pD88SectorHead->sector         = sectorNo;
+  pD88SectorHead->sectorSize     = length;
+  pD88SectorHead->numberOfSector = eot;
+  pD88SectorHead->density        = 0x00;  // 0x00 : double density
+  pD88SectorHead->deletedMark    = 0x00;  // 0x00 : normal
+  pD88SectorHead->status         = 0x00;  // 0x00 : normal
+  pD88SectorHead->reserve[0]     = 0x00;
+  pD88SectorHead->reserve[1]     = 0x00;
+  pD88SectorHead->reserve[2]     = 0x00;
+  pD88SectorHead->reserve[3]     = 0x00;
+  pD88SectorHead->reserve[4]     = 0x00;
+  pD88SectorHead->sizeOfData     = length;
+  memset( &m_formatData[offset+16], fillData, m_sectorSize );
+  return true;
 }
 
 

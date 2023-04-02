@@ -1,6 +1,6 @@
 /*
   Created by tan (trinity09181718@gmail.com)
-  Copyright (c) 2022 tan
+  Copyright (c) 2022-2023 tan
   All rights reserved.
 
 * Please contact trinity09181718@gmail.com if you need a commercial license.
@@ -23,6 +23,14 @@
  */
 
 // 更新履歴
+// 2023/03/28 V1.0.9 マスター側uPD8214割込コントローラのカレントステータスを正しく実装。ESP32 UART(USB)は1つしかないため割込優先度制御実装無し。
+// 2023/03/21        ESP32 UART=SerialオブジェクトをPRINTER出力(115200bps,8N1)/PC-8011的 channel#1/channel#2として選択出来るようにした。
+//                   Serialオブジェクトのbps(115200/9600/4800/2400/1200/600/300)を選択出来るようにした。
+//                   マクロ NARYA_2_0 有効時に NARYA2.0 GROVE UART(8N1)=Serial2オブジェクトのbps(115200/9600/4800)を選択出来るようにした。
+//                   PC-8011的RS-232C(uPD8251) channel#1/channel#2のエミュレートを実装した。ESP32 UART(USB)機能との兼ね合いで実装不可項目あり。
+//                   詳細はsrc/UART.hのuPD8251的制御情報コメントを参照。
+//                   余談としてGP-IB懐かしい。TI/TMS9914を使って制御システム作りましたねｗ TALKER/LISTENER/SRQ/IFCなどなど。まだ現役システムあるのかな(笑)
+//                   pc8031FabGLよりformat(write_id)速度改善関連フィードバックを入れた。
 // 2022/10/12 v1.0.8 多段ロード形式がロードできない(v1.0.7動作不良改修で出来なくなった(確認不足))
 //                     1.mon
 //                       *L
@@ -74,7 +82,7 @@
 
 #define N80FABGL_VERSION_MAJOR      1
 #define N80FABGL_VERSION_MINOR      0
-#define N80FABGL_VERSION_REVISION   8
+#define N80FABGL_VERSION_REVISION   9
 
 #define N80FABGL_VERSION            (  ((int)N80FABGL_VERSION_MAJOR) << 16 \
                                      | ((int)N80FABGL_VERSION_MINOR) << 8 \

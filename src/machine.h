@@ -1,6 +1,6 @@
 /*
   Created by tan (trinity09181718@gmail.com)
-  Copyright (c) 2022 tan
+  Copyright (c) 2022-2023 tan
   All rights reserved.
 
   This program is based on FabGL/examples/VGA/Altair8800/src/machine.h and
@@ -58,6 +58,7 @@ using namespace fabgl;
 #include "KEYBRD.h"
 #include "PCG.h"
 #include "PRINTER.h"
+#include "UART.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -92,7 +93,7 @@ public:
 
   ~Machine();
 
-  int init( bool selDiskRomEnable = true );
+  int init( bool selDiskRomEnable = true, int selEsp32UartType = 0, int selEsp32UartBpsType = 0, int selNARYA20GroveUartType = 2 );
 
   bool romload( const char * fileName );
 
@@ -117,6 +118,9 @@ public:
 
   static int readIO( void * context, int address );
   static void writeIO( void * context, int address, int value );
+
+  void onSerialReceive( void )              { m_UART.onReceive( &m_UART ); }
+  void onSerialReceiveError( hardwareSerial_error_t errorID ) { m_UART.onReceiveError( &m_UART, errorID ); }
 
   packeduPD3301adpter * cga( void )         { return &m_CGA; }
   void menu2FileName( const char * value )  { strcpy( m_menu2FileName, value ); }
@@ -174,6 +178,7 @@ private:
   void softReset( void * context );
   void setRequestCpuCmd( requestCpuCmd cmd, uint16_t PC = 0, uint16_t SP = 0, uint16_t BP = 0 );
 
+  static void intReq( void * context, int value );
   static void setScreenMode( void * context, int value );
   static void setPCGMode( void * context, int value );
   static void updatePCGFont( void * context );
@@ -240,7 +245,27 @@ static uint8_t *  s_videoMemory;            // fabgl VGA memory
   int             m_n80LoadSize;            // N80 file load size
   uint16_t        m_requestPC;              // request set PC
   uint16_t        m_requestSP;              // request set SP
-
+  bool            m_requestIRQ;             // flag : im2 interrupt Request
+  int             m_requestVectorLoAdrs;    // flag : im2 interrupt Request Vector Lo Address
+  int             m_selEsp32UartType;       // ESP32 UART TYPE
+                                            //   0 : PRINTER(115200bps 8N1, _DEBUG true 併用)
+                                            //   1 : PC-8011 USART channel1
+                                            //   2 : PC-8011 USART channel2
+  int             m_selEsp32UartBpsType;    // PC-8011 USART factor and bps type
+                                            //   0 : 16x 9600bps
+                                            //   1 : 16x 4800bps
+                                            //   2 : 16x 2400bps
+                                            //   3 : 16x 1200bps
+                                            //   4 : 16x  600bps
+                                            //   5 : 16x  300bps
+                                            //   6 : 64x 1200bps
+                                            //   7 : 64x  600bps
+                                            //   8 : 64x  300bps
+  long            m_selEsp32UartBps;        // PC-8011 USART bps
+  int             m_selNARYA20GroveUartType;// NARYA2.0 GROVE UART TYPE
+                                            //   0 : 8N1 115200bps( m_selEsp32UartType != 0 && _DEBUG true 併用)
+                                            //   1 : 8N1 9600bps
+                                            //   2 : 8N1 4800bps
   BUZZER          m_BUZZER;                 // PC-8001 Device BUZZER
   CALENDAR        m_CALENDAR;               // PC-8001 Device CALENDAR
   CMT             m_CMT;                    // PC-8001 Device CMT
@@ -249,6 +274,7 @@ static uint8_t *  s_videoMemory;            // fabgl VGA memory
   KEYBRD          m_KEYBRD;                 // PC-8001 Device KEYBRD
   PCG             m_PCG;                    // HAL PCG-8100
   PRINTER         m_PRINTER;                // PC-8001 Device PRINTER
+  UART            m_UART;                   // PC-8011 Device SERIAL
 
 #ifdef _DEBUG
   char            m_serialRecvBuf[64];      // debug command Serial recive buffer
