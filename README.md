@@ -187,7 +187,7 @@ bps選択定義にてリセットかかります。<br>
 通信条件定義はchannel#1の場合、直ポートは0C1H、N-BASICはINIT %1,mm,ccです。<br>
 通信条件定義はchannel#2の場合、直ポートは0C3H、N-BASICはINIT %2,mm,ccです。<br>
 
-以下、N-BASICユーザーズマニュアル関連箇所です。<br>
+以下、PC-8001 USER'S MANUAL関連箇所です。<br>
 
 ![PC8001_USERS_MANUAL_062](/img/PC8001_USERS_MANUAL_062.jpg)
 
