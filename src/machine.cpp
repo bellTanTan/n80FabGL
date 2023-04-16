@@ -1141,16 +1141,16 @@ void Machine::vkf11( void * context, int value )
   // (2) yyy.cmt (BASIC) と  monyyy.cmt (マシン語) の場合
   // c:\t88tool -n -f "yyy.n80" "yyy.bas" "monyyy.cmt"
   //
-  if ( !value )
-  {
-    // VK_F11 押下
-    m->m_n80Load = m->n80Load( "Bug Fire.n80" );
-  }
-  else
-  {
-    // SHIFT + VK_F11 押下
-    m->m_n80Load = m->n80Load( "Scramble.n80" );
-  }
+  //if ( !value )
+  //{
+  //  // VK_F11 押下
+  //  m->m_n80Load = m->n80Load( "Bug Fire.n80" );
+  //}
+  //else
+  //{
+  //  // SHIFT + VK_F11 押下
+  //  m->m_n80Load = m->n80Load( "Scramble.n80" );
+  //}
   if ( m->m_n80Load )
     m->setRequestCpuCmd( cmdSetPCSP, m->m_requestPC, m->m_requestSP, 0 );
   m->setRequestCpuCmd( cmdContinue );
