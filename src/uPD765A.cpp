@@ -47,7 +47,6 @@ uPD765A::uPD765A()
   m_requestIRQ     = NULL;
   m_media          = NULL;
   m_soundGenerator = NULL;
-  m_bgmSeek        = NULL;
 }
 
 
@@ -69,7 +68,6 @@ bool uPD765A::reset( bool * requestIRQ, media * disk, uint8_t * d88rwBuffer, Sou
   m_eventPhase      = (PHASE)-1;
   m_eventPhaseTimer = 0;
   m_eventID         = (EVENT)-1;
-  m_bgmSeekTimer    = 0;
   m_mainStatus      = S_RQM;
   m_stepRateTime    = 0;
   m_noDmaMode       = true;
@@ -77,17 +75,10 @@ bool uPD765A::reset( bool * requestIRQ, media * disk, uint8_t * d88rwBuffer, Sou
   memset( m_fdd, 0, sizeof( m_fdd ) );
   memset( m_eventTimer, 0, sizeof( m_eventTimer ) );
   set_hdu( 0 );
+  m_eot = 16;
 
   if ( !m_soundGenerator )
-  {
     m_soundGenerator = soundGenerator;
-#ifndef DONT_SEEK_SOUND
-    m_bgmSeek = m_soundGenerator->playSamples( (int8_t *)&_seekTrackAnyData[0], sizeof( _seekTrackAnyData ), 100, -1 );
-    if ( !m_bgmSeek )
-      return false;
-    m_bgmSeek->enable( false );
-#endif // !DONT_SEEK_SOUND
-  }
 
   for ( int i = 0; i < MAX_DRIVE; i++ )
   {
@@ -256,10 +247,6 @@ void uPD765A::tick( void )
       }
       break;
   }
-#ifndef DONT_SEEK_SOUND
-  if ( checkTimer( m_bgmSeekTimer ) )
-    bgmSeekEnd();
-#endif // !DONT_SEEK_SOUND
 }
 
 
@@ -616,7 +603,7 @@ void uPD765A::seek( int drv, int trk )
     m_fdd[drv].track = trk;
     _UPD765A_DEBUG_PRINT( "uPD765A %s(%d) drv(%d) trk(%d) seektime(%d)\r\n", __func__, __LINE__, drv, trk, seektime );
 #ifndef DONT_SEEK_SOUND
-    bgmSeekBegin();
+    bgmSeekPlay();
 #endif // !DONT_SEEK_SOUND
 #ifdef UPD765A_DONT_WAIT_SEEK
     seek_event( drv );
@@ -922,9 +909,6 @@ void uPD765A::shift_to_result7( void )
   m_buffer[6] = m_id[3];
 	shift_to_result( 7 );
   set_irq( true );
-#ifndef DONT_SEEK_SOUND
-  bgmSeekEnd();
-#endif // !DONT_SEEK_SOUND
 }
 
 
@@ -963,16 +947,13 @@ int uPD765A::get_usec_to_exec_phase( void )
 }
 
 
-void uPD765A::bgmSeekBegin( void )
+void uPD765A::bgmSeekPlay( void )
 {
-  m_bgmSeek->enable( true );
-  m_bgmSeekTimer = micros() + 100 * 1000;
-}
-
-
-void uPD765A::bgmSeekEnd( void )
-{
-  m_bgmSeekTimer = 0;
-  m_bgmSeek->enable( false );
+  // Arduino/libraries/FabGL/examples/VGA/SpaceInvaders/SpaceInvaders.inoの形式にする
+  // playSamples() の第四引数を -1(無限ループ再生) から 0 (1回のみ) にし毎回 SoundGeneratorクラスplaySamplesメソッド実行形式
+  // 副作用として「メモリリーク(実測86byteずつフリーヒープ残バイト数が減っていく)」が毎回発生(草)
+  // 24時間連続稼働系システムならこんな動作不良はそもそも論外だけどお遊び仮想ディスクシステム実装だしまぁいいか(草)
+  m_soundGenerator->playSamples( (int8_t *)&_seekTrackAnyData[0], sizeof( _seekTrackAnyData ), 100, 0 );
+  _DEBUG_PRINT( "Internal Free  Heap %d bytes\r\n", ESP.getFreeHeap() );
 }
 

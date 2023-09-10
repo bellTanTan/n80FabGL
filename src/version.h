@@ -23,8 +23,13 @@
  */
 
 // 更新履歴
-// 2023/04/15 V1.0.10 format(write_id)で.d88のsectorSizeフィールドが0x00になっていた不具合改修。
-// 2023/03/28 V1.0.9 マスター側uPD8214割込コントローラのカレントステータスを正しく実装。ESP32 UART(USB)は1つしかないため割込優先度制御実装無し。
+// 2023/09/10 v1.0.11 Arduino 2.0.12 based on ESP-IDF 4.4.5での動作確認。特に異常検出無し。
+//                    PC-8011的RS-232C(uPD8251)ポートC8H/CAH出力値(0xFF/0x00)にて有効化/無効化する機能を削除した。
+//                    seek音再生手順変更。詳細はuPD765A.cpp uPD765A::bgmSeekPlay()を参照。
+//                    format(write_id)でeot値がシーケンス的初期化されない場合の初期値(16セクタ値)を入れた。
+//                    PC-8011/PC-8031的メモリクリア(64バイト0xFF,64バイト0x00)追加
+// 2023/04/15 v1.0.10 format(write_id)で.d88のsectorSizeフィールドが0x00になっていた不具合改修。
+// 2023/03/28 v1.0.9 マスター側uPD8214割込コントローラのカレントステータスを正しく実装。ESP32 UART(USB)は1つしかないため割込優先度制御実装無し。
 // 2023/03/21        ESP32 UART=SerialオブジェクトをPRINTER出力(115200bps,8N1)/PC-8011的 channel#1/channel#2として選択出来るようにした。
 //                   Serialオブジェクトのbps(115200/9600/4800/2400/1200/600/300)を選択出来るようにした。
 //                   マクロ NARYA_2_0 有効時に NARYA2.0 GROVE UART(8N1)=Serial2オブジェクトのbps(115200/9600/4800)を選択出来るようにした。
@@ -83,7 +88,7 @@
 
 #define N80FABGL_VERSION_MAJOR      1
 #define N80FABGL_VERSION_MINOR      0
-#define N80FABGL_VERSION_REVISION   10
+#define N80FABGL_VERSION_REVISION   11
 
 #define N80FABGL_VERSION            (  ((int)N80FABGL_VERSION_MAJOR) << 16 \
                                      | ((int)N80FABGL_VERSION_MINOR) << 8 \

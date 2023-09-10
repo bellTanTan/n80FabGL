@@ -1,6 +1,6 @@
 /*
   Created by tan (trinity09181718@gmail.com)
-  Copyright (c) 2022 tan
+  Copyright (c) 2022-2023 tan
   All rights reserved.
 
   This program is based on upd765a.h in xm8_170.zip
@@ -141,7 +141,7 @@ public:
   ~uPD765A();
 
   bool reset( bool * requestIRQ, media * disk, uint8_t * d88rwBuffer, SoundGenerator * soundGenerator );
-  void softReset( void )                    { bgmSeekEnd(); }
+  void softReset( void )                    { }
   int readIO( int address );
   void writeIO( int address, int value );
   void write_signal( int id );
@@ -183,8 +183,7 @@ private:
   void shift_to_result7( void );
   bool id_incr( void );
   int get_usec_to_exec_phase( void );
-  void bgmSeekBegin( void );
-  void bgmSeekEnd( void );
+  void bgmSeekPlay( void );
   static __inline bool checkTimer( uint32_t t )
   {
     if ( t != 0 && micros() > t )
@@ -222,13 +221,11 @@ private:
   uint32_t    m_eventPhaseTimer;
   EVENT       m_eventID;
   uint32_t    m_eventTimer[9];
-  uint32_t    m_bgmSeekTimer;
 
   bool        m_forceReady;
   int         m_stepRateTime;
   bool        m_noDmaMode;
 
   SoundGenerator    * m_soundGenerator;   // fabgl library : class SoundGenerator
-  SamplesGenerator  * m_bgmSeek;          // fabgl library : class SamplesGenerator
 };
 

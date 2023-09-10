@@ -3,7 +3,7 @@
   Copyright (c) 2022-2023 tan
   All rights reserved.
 
-  Arduino IDE board : Arduino ESP32 v2.0.7
+  Arduino IDE board : Arduino ESP32 v2.0.12
   library           : FabGL v1.0.9
   target            : ESP32 DEV Module(ESP32-Wrover)
   flash size        : 4MB(32Mb)
@@ -34,7 +34,7 @@
 // 問題点
 //
 // 1. 全般
-//    Arduino ESP32 v2.0.7 & FabGL v1.0.9
+//    Arduino ESP32 v2.0.12 & FabGL v1.0.9
 //      微妙に遅い
 //
 // 2. WIDTH 80,20 表示崩れ

@@ -151,19 +151,17 @@ public:
 
   bool reset( int selEsp32UartType, int selEsp32UartBpsType, int selEsp32UartBps )
   {
-    m_txEnable             = false;
-    m_rxEnable             = false;
-    m_commandSetup         = true;
-    m_rxEmpty              = true;
-    m_ch1EnableRxInterrupt = false;
-    m_ch2EnableRxInterrupt = false;
-    m_receiveData          = 0x00;
-    m_statusData           = _STATUS_CLEAR;
-    m_m8214CurrentStatus   = 0xFF;
-    m_selEsp32UartType     = selEsp32UartType;
-    m_selEsp32UartBpsType  = selEsp32UartBpsType;
-    m_selEsp32UartBps      = selEsp32UartBps;
-    m_mutexUART            = portMUX_INITIALIZER_UNLOCKED;
+    m_txEnable            = false;
+    m_rxEnable            = false;
+    m_commandSetup        = true;
+    m_rxEmpty             = true;
+    m_receiveData         = 0x00;
+    m_statusData          = _STATUS_CLEAR;
+    m_m8214CurrentStatus  = 0xFF;
+    m_selEsp32UartType    = selEsp32UartType;
+    m_selEsp32UartBpsType = selEsp32UartBpsType;
+    m_selEsp32UartBps     = selEsp32UartBps;
+    m_mutexUART           = portMUX_INITIALIZER_UNLOCKED;
     Serial.onReceive( NULL );
     Serial.onReceiveError( NULL );
     return true;
@@ -223,26 +221,6 @@ public:
 
   bool writeIO( int address, int value )
   {
-    if ( address == 0xC8 )
-    {
-      portENTER_CRITICAL( &m_mutexUART );
-      if ( value == 0xFF )
-        m_ch1EnableRxInterrupt = true;
-      else
-        m_ch1EnableRxInterrupt = false;
-      portEXIT_CRITICAL( &m_mutexUART );
-      return true;
-    }
-    if ( address == 0xCA )
-    {
-      portENTER_CRITICAL( &m_mutexUART );
-      if ( value == 0xFF )
-        m_ch2EnableRxInterrupt = true;
-      else
-        m_ch2EnableRxInterrupt = false;
-      portEXIT_CRITICAL( &m_mutexUART );
-      return true;
-    }
     if ( address == 0xE4 )
     {
       portENTER_CRITICAL( &m_mutexUART );
@@ -430,10 +408,10 @@ public:
       m->m_statusData |= _STATUS_RxRDY;
       int vectorLoAdrs = 0;
       // Not implement : MASTER uPD8214 INTERRURT PRIORITY CONTROL
-      if ( m->m_selEsp32UartType == 1 && m->m_m8214CurrentStatus == 0xFF && m->m_ch1EnableRxInterrupt )
+      if ( m->m_selEsp32UartType == 1 && m->m_m8214CurrentStatus == 0xFF )
         vectorLoAdrs = 0x08;
       // Not implement : MASTER uPD8214 INTERRURT PRIORITY CONTROL
-      if ( m->m_selEsp32UartType == 2 && m->m_m8214CurrentStatus == 0xFF && m->m_ch2EnableRxInterrupt )
+      if ( m->m_selEsp32UartType == 2 && m->m_m8214CurrentStatus == 0xFF )
         vectorLoAdrs = 0x0A;
       if ( vectorLoAdrs )
         m->m_intReq( m->m_context, vectorLoAdrs );
@@ -478,8 +456,6 @@ private:
   bool            m_rxEnable;             // flag : uPD8251 RECEIVE ENABLE
   bool            m_commandSetup;         // flag : uPD8251 COMMAND SETUP
   bool            m_rxEmpty;              // flag : uPD8251 EMPTY RECEIVE DATA
-  bool            m_ch1EnableRxInterrupt; // flag : PC-8011 ch#1 Enable Receive Interrupt
-  bool            m_ch2EnableRxInterrupt; // flag : PC-8011 ch#2 Enable Receive Interrupt
   uint8_t         m_receiveData;          // uPD8251 RECEIVE DATA
   uint8_t         m_statusData;           // uPD8251 STATUS
   uint8_t         m_m8214CurrentStatus;   // MASTER uPD8214 CURRENT STATUS

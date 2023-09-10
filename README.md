@@ -336,7 +336,7 @@ Arduino ESP32 v1.0.6 & FabGL v1.0.9 を利用した場合<br>
 <br>
 微妙に遅い。<br>
 <br>
-Arduino ESP32 v2.0.7 & FabGL v1.0.9 を利用した場合<br>
+Arduino ESP32 v2.0.12 & FabGL v1.0.9 を利用した場合<br>
 <br>
 微妙に遅い。<br>
 <br>

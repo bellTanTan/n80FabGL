@@ -72,6 +72,11 @@ bool DISK::romLoad( const char * fileName )
     m_RAM = (uint8_t *)ps_malloc( size );
     if ( !m_RAM ) return false;
     memset( m_RAM, 0, size );
+    for ( int i = 0x4000; i <= 0x7FFF; i += 128 )
+    {
+      memset( &m_RAM[i+0],  0xFF, 64 );
+      memset( &m_RAM[i+64], 0x00, 64 );
+    }
     m_RAMSize = size;
     // used : 16 + 256 bytes
     m_d88ReadWriteBuffer = &m_RAM[0x2000];

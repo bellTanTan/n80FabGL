@@ -469,7 +469,11 @@ bool Machine::attachRAM( int RAMSize )
   m_RAMExt = (uint8_t *)ps_malloc( size );
   if ( !m_RAMExt ) return false;
   m_RAMExtSize = size;
-  memset( m_RAMExt, 0x00, m_RAMExtSize );
+  for ( int i = 0x0000; i <= 0x7FFF; i += 128 )
+  {
+    memset( &m_RAMExt[i+0],  0xFF, 64 );
+    memset( &m_RAMExt[i+64], 0x00, 64 );
+  }
   size = 65536;
   m_n80LoadRam = (uint8_t *)ps_malloc( size );
   if ( !m_n80LoadRam ) return false;
@@ -850,7 +854,8 @@ int Machine::readIO( void * context, int address )
       break;
     case 0xFC:
     case 0xFE:
-      m->m_DISK.pcReadIO( address, &value, pc );
+      if ( m->m_diskEnable )
+        m->m_DISK.pcReadIO( address, &value, pc );
       break;
     default:
       // not handlded!
@@ -928,20 +933,13 @@ void Machine::writeIO( void * context, int address, int value )
     case 0xC1:
     case 0xC2:
     case 0xC3:
-      if ( !m->m_UART.writeIO( address, value ) )
+      m->m_UART.writeIO( address, value );
       {
 #ifdef _DEBUG
         int ch = ( ( address == 0xC0 || address == 0xC1 ) ? 1 : 2 );
 #endif  // _DEBUG
-        // ignore
         _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] RS-232C ch#%d\r\n", __func__, __LINE__, address, value, pc, ch );
       }
-      break;
-    case 0xC8:
-    case 0xCA:
-      if ( !m->m_UART.writeIO( address, value ) )
-        // ignore
-        _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] RS-232C disable\r\n", __func__, __LINE__, address, value, pc );
       break;
     case 0xD0:
     case 0xD1:
@@ -978,11 +976,13 @@ void Machine::writeIO( void * context, int address, int value )
       break;
     case 0xFD:
       _DEBUG_PRINT( "%s(%d):0x%02X 0x%02X [PC 0x%04X] DISK\r\n", __func__, __LINE__, address, value, pc );
-      m->m_DISK.pcWriteIO( address, value, pc );
+      if ( m->m_diskEnable )
+        m->m_DISK.pcWriteIO( address, value, pc );
       break;
     case 0xFE:
     case 0xFF:
-      m->m_DISK.pcWriteIO( address, value, pc );
+      if ( m->m_diskEnable )
+        m->m_DISK.pcWriteIO( address, value, pc );
       break;
     default:
       // not handlded!
@@ -1141,16 +1141,16 @@ void Machine::vkf11( void * context, int value )
   // (2) yyy.cmt (BASIC) と  monyyy.cmt (マシン語) の場合
   // c:\t88tool -n -f "yyy.n80" "yyy.bas" "monyyy.cmt"
   //
-  //if ( !value )
-  //{
-  //  // VK_F11 押下
-  //  m->m_n80Load = m->n80Load( "Bug Fire.n80" );
-  //}
-  //else
-  //{
-  //  // SHIFT + VK_F11 押下
-  //  m->m_n80Load = m->n80Load( "Scramble.n80" );
-  //}
+  if ( !value )
+  {
+    // VK_F11 押下
+    m->m_n80Load = m->n80Load( "Bug Fire.n80" );
+  }
+  else
+  {
+    // SHIFT + VK_F11 押下
+    m->m_n80Load = m->n80Load( "Scramble.n80" );
+  }
   if ( m->m_n80Load )
     m->setRequestCpuCmd( cmdSetPCSP, m->m_requestPC, m->m_requestSP, 0 );
   m->setRequestCpuCmd( cmdContinue );
